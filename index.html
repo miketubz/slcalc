@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SL Date Calculator</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #f0f4f8;
+  color: #2d3748;
+  min-height: 100vh;
+  padding: 16px;
+}
+header {
+  background: linear-gradient(135deg, #4f8ef7, #6c63ff);
+  color: white;
+  padding: 18px 20px 14px;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 15px rgba(79,142,247,0.3);
+}
+header h1 { font-size: 1.2rem; font-weight: 700; }
+header p  { font-size: 0.72rem; opacity: 0.85; margin-top: 2px; }
+.help-btn {
+  background: rgba(255,255,255,0.25);
+  border: 1.5px solid rgba(255,255,255,0.6);
+  color: white;
+  border-radius: 50%;
+  width: 34px; height: 34px;
+  font-size: 1rem; font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.help-btn:hover { background: rgba(255,255,255,0.4); }
+.card {
+  background: white;
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+}
+.card-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #4f8ef7;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.card-title .badge {
+  background: #4f8ef7;
+  color: white;
+  border-radius: 50%;
+  width: 20px; height: 20px;
+  font-size: 0.7rem;
+  display: flex; align-items: center; justify-content: center;
+}
+label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 5px;
+}
+.date-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: #2d3748;
+  background: #f7fafc;
+  outline: none;
+  transition: border 0.2s;
+  margin-bottom: 10px;
+}
+.date-input:focus { border-color: #4f8ef7; background: white; }
+.calc-btn {
+  background: linear-gradient(135deg, #4f8ef7, #6c63ff);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  width: 100%;
+  margin-bottom: 10px;
+}
+.calc-btn:hover { opacity: 0.88; }
+.option-row {
+  display: none;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.option-row.show { display: flex; }
+.option-btn {
+  flex: 1;
+  padding: 9px 6px;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  background: #f7fafc;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #4a5568;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+.option-btn:hover { border-color: #4f8ef7; color: #4f8ef7; }
+.option-btn.active {
+  background: #4f8ef7;
+  border-color: #4f8ef7;
+  color: white;
+}
+.specify-row {
+  display: none;
+  margin-bottom: 10px;
+}
+.specify-row.show { display: block; }
+.specify-row input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #4f8ef7;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: #2d3748;
+  background: #ebf4ff;
+  outline: none;
+}
+.confirm-btn {
+  background: linear-gradient(135deg, #4f8ef7, #6c63ff);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 9px 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 6px;
+  transition: opacity 0.2s;
+}
+.confirm-btn:hover { opacity: 0.88; }
+.result-box {
+  display: none;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1.5px solid #e2e8f0;
+}
+.result-box.show { display: block; }
+.result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  border-bottom: 1px solid #f0f4f8;
+}
+.result-item:last-child { border-bottom: none; }
+.result-item:nth-child(even) { background: #f7fafc; }
+.result-label { color: #718096; font-weight: 500; }
+.result-value { font-weight: 700; color: #2d3748; font-size: 0.95rem; }
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-top: 10px;
+}
+.status-same    { background: #ebf8ff; color: #2b6cb0; }
+.status-advance { background: #fff5f5; color: #c53030; }
+.status-past    { background: #f0fff4; color: #276749; }
+.export-btn {
+  width: 100%;
+  padding: 13px;
+  background: linear-gradient(135deg, #38a169, #2f855a);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(56,161,105,0.3);
+  transition: opacity 0.2s;
+  margin-bottom: 10px;
+}
+.export-btn:hover { opacity: 0.88; }
+.template-btn {
+  width: 100%;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #1d6f42, #207245);
+  color: white;
+  border: 2px solid #185c37;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  box-shadow: 0 4px 12px rgba(29,111,66,0.35);
+  transition: opacity 0.2s;
+}
+.template-btn:hover { opacity: 0.88; }
+.template-btn-text-main { font-size: 0.85rem
+; font-weight: 700; }
+.template-btn-text-sub { font-size: 0.7rem; opacity: 0.85; margin-top: 2px; }
+.hint {
+  font-size: 0.73rem;
+  color: #a0aec0;
+  margin-bottom: 10px;
+}
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: white;
+  border-radius: 16px;
+  padding: 24px 20px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+.modal h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #4f8ef7;
+  margin-bottom: 14px;
+}
+.modal p, .modal li {
+  font-size: 0.83rem;
+  color: #4a5568;
+  line-height: 1.6;
+  margin-bottom: 6px;
+}
+.modal ul { padding-left: 18px; margin-bottom: 10px; }
+.modal-close {
+  margin-top: 16px;
+  width: 100%;
+  padding: 10px;
+  background: #4f8ef7;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+footer {
+  text-align: center;
+  font-size: 0.72rem;
+  color: #a0aec0;
+  margin-top: 16px;
+  padding-bottom: 10px;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>📅 SL Date Calculator</h1>
+    <p>Study Leave · Claim Date Tracker</p>
+  </div>
+  <button class="help-btn" onclick="toggleHelp()">?</button>
+</header>
+
+<!-- SECTION 1 -->
+<div class="card">
+  <div class="card-title"><span class="badge">1</span> Date of Study Leave (SL)</div>
+  <label>Pick a date</label>
+  <input type="date" id="sl-picker" class="date-input"/>
+  <button class="calc-btn" onclick="showOptions('s1')">Calculate</button>
+
+  <div class="option-row" id="s1-options">
+    <button class="option-btn" id="s1-opt1" onclick="selectOption('s1','current')">
+      📅 1. Current Date
+    </button>
+    <button class="option-btn" id="s1-opt2" onclick="selectOption('s1','specify')">
+      🗓️ 2. Specify Date
+    </button>
+  </div>
+
+  <div class="specify-row" id="s1-specify">
+    <label>Enter target date</label>
+    <input type="date" id="s1-specify-date" class="date-input" style="margin-bottom:6px;"/>
+    <button class="confirm-btn" onclick="confirmSpecify('s1')">Confirm &amp; Calculate</button>
+  </div>
+
+  <div class="result-box" id="res1"></div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="card">
+  <div class="card-title"><span class="badge">2</span> Date of Claim</div>
+  <label>Pick a date</label>
+  <input type="date" id="claim-picker" class="date-input"/>
+  <button class="calc-btn" onclick="showOptions('s2')">Calculate</button>
+
+  <div class="option-row" id="s2-options">
+    <button class="option-btn" id="s2-opt1" onclick="selectOption('s2','current')">
+      📅 1. Current Date
+    </button>
+    <button class="option-btn" id="s2-opt2" onclick="selectOption('s2','specify')">
+      🗓️ 2. Specify Date
+    </button>
+  </div>
+
+  <div class="specify-row" id="s2-specify">
+    <label>Enter target date</label>
+    <input type="date" id="s2-specify-date" class="date-input" style="margin-bottom:6px;"/>
+    <button class="confirm-btn" onclick="confirmSpecify('s2')">Confirm &amp; Calculate</button>
+  </div>
+
+  <div class="result-box" id="res2"></div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="card">
+  <div class="card-title"><span class="badge">3</span> SL Date → Claim Date</div>
+  <label>SL Date (auto-filled from Section 1 if set)</label>
+  <input type="date" id="s3-sl-picker" class="date-input"/>
+  <label>Claim Date (auto-filled from Section 2 if set)</label>
+  <input type="date" id="s3-claim-picker" class="date-input"/>
+  <button class="calc-btn" onclick="calcSection3()">Calculate</button>
+  <div class="result-box" id="res3"></div>
+</div>
+
+<!-- EXPORT CARD -->
+<div class="card">
+  <button class="export-btn" onclick="exportCSV()">
+    📥 Export Results to Excel (.csv)
+  </button>
+  <button class="template-btn" onclick="downloadTemplate()">
+    <span style="font-size:1.5rem;">📊</span>
+    <div>
+      <div class="template-btn-text-main">Get Excel Template</div>
+      <div class="template-btn-text-sub">Open &amp; calculate directly in Excel with built-in formulas</div>
+    </div>
+  </button>
+</div>
+
+<footer>Made by mike_tubel &nbsp;·&nbsp; SL Date Calculator v1.0</footer>
+
+<!-- HELP MODAL -->
+<div class="modal-overlay" id="helpModal">
+  <div class="modal">
+    <h2>📖 How to Use</h2>
+    <p><strong>Section 1 – Date of SL:</strong><br>
+      Pick your Study Leave date then tap Calculate. Choose Current Date to compare with today, or Specify Date to compare with any date.</p>
+    <p><strong>Section 2 – Date of Claim:</strong><br>
+      Same as Section 1 but for your Claim date.</p>
+    <p><strong>Section 3 – SL to Claim:</strong><br>
+      Compares SL date vs Claim date directly. Auto-fills from Sections 1 &amp; 2.</p>
+    <hr style="margin:10px 0; border-color:#e2e8f0"/>
+    <p><strong>Status Indicators:</strong></p>
+    <ul>
+      <li>🟢 <strong>Past</strong> – Date already occurred</li>
+      <li>🔵 <strong>Same Day</strong> – Matches the compared date</li>
+      <li>🔴 <strong>Advanced Claim</strong> – Claim filed before SL happened</li>
+    </ul>
+    <hr style="margin:10px 0; border-color:#e2e8f0"/>
+    <p><strong>Export CSV:</strong> Downloads all results as a .csv file openable in Excel.</p>
+    <p><strong>Get Excel Template:</strong> Downloads a pre-built .xls file with live formulas. Type dates in yellow cells.</p>
+    <button class="modal-close" onclick="toggleHelp()">Got it!</button>
+  </div>
+</div>
+
+<script>
+  // ── Helpers ───────────────────────────────────────────────
+  function today() {
+    const t = new Date();
+    t.setHours(0,0,0,0);
+    return t;
+  }
+
+  function parseDate(str) {
+    if (!str) return null;
+    str = str.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+      const d = new Date(str + 'T00:00:00');
+      return isNaN(d) ? null : d;
+    }
+    return null;
+  }
+
+  function formatDate(d) {
+    if (!d) return '—';
+    return d.toLocaleDateString('en-GB', {
+      day: '2-digit', month: 'short', year: 'numeric'
+    });
+  }
+
+  function diffCalc(dateA, dateB) {
+    const diffMs = dateB - dateA;
+    const days   = Math.round(diffMs / 86400000);
+    const weeks  = (days / 7).toFixed(2);
+    const months = (days / 30.44).toFixed(2);
+    return { days, weeks, months, diffMs };
+  }
+
+  function toExcelSerial(d) {
+    if (!d) return '';
+    const epoch = new Date('1899-12-30T00:00:00');
+    return Math.round((d - epoch) / 86400000);
+  }
+
+  function buildResultHTML(diff, labelA, labelB) {
+    const { days, weeks, months, diffMs } = diff;
+    const absDays   = Math.abs(days);
+    const absWeeks  = Math.abs(parseFloat(weeks));
+    const absMonths = Math.abs(parseFloat(months));
+    const direction = diffMs >= 0 ? 'elapsed' : 'remaining';
+
+    return `
+      <div class="result-item">
+        <span class="result-label">📅 Days ${direction}</span>
+        <span class="result-value">${absDays} day${absDays !== 1 ? 's' : ''}</span>
+      </div>
+      <div class="result-item">
+        <span class="result-label">📆 Weeks ${direction}</span>
+        <span class="result-value">${absWeeks.toFixed(2)} wks</span>
+      </div>
+      <div class="result-item">
+        <span class="result-label">🗓️ Months ${direction}</span>
+        <span class="result-value">${absMonths.toFixed(2)} mo</span>
+      </div>
+      <div class="result-item">
+        <span class="result-label">From</span>
+        <span class="result-value">${labelA}</span>
+      </div>
+      <div class="result-item">
+        <span class="result-label">To</span>
+        <span class="result-value">${labelB}</span>
+      </div>`;
+  }
+
+  function statusBadge(dateA, dateB, mode) {
+    const diff = dateB - dateA;
+    if (mode === 'today' || mode === 'specify') {
+      if (diff === 0) return `<div class="status-badge status-same">🔵 Same Day</div>`;
+      if (diff > 0)   return `<div class="status-badge status-past">🟢 Date is in the Past</div>`;
+      return                 `<div class="status-badge status-advance">🔴 Future Date — not yet occurred</div>`;
+    }
+    if (mode === 'claim') {
+      if (diff === 0) return `<div class="status-badge status-same">🔵 Claim filed Same Day as SL</div>`;
+      if (diff > 0)   return `<div class="status-badge status-past">🟢 Claim filed After SL (normal)</div>`;
+      return                 `<div class="status-badge status-advance">🔴 Advanced Claim — filed Before SL!</div>`;
+    }
+    return '';
+  }
+
+  // ── Option Selection ──────────────────────────────────────
+  function showOptions(sec) {
+    const pickerId = sec === 's1' ? 'sl-picker' : 'claim-picker';
+    const dateVal  = document.getElementById(pickerId).value;
+    if (!dateVal) { alert('Please pick a date first.'); return; }
+
+    document.getElementById(sec + '-options').classList.add('show');
+    document.getElementById(sec + '-specify').classList.remove('show');
+    document.getElementById(sec + '-opt1').classList.remove('active');
+    document.getElementById(sec + '-opt2').classList.remove('active');
+    document.getElementById('res' + (sec === 's1' ? '1' : '2')).classList.remove('show');
+  }
+
+  function selectOption(sec, type) {
+    document.getElementById(sec + '-opt1').classList.remove('active');
+    document.getElementById(sec + '-opt2').classList.remove('active');
+
+    if (type === 'current') {
+      document.getElementById(sec + '-opt1').classList.add('active');
+      document.getElementById(sec + '-specify').classList.remove('show');
+      calcWithTarget(sec, today());
+    } else {
+      document.getElementById(sec + '-opt2').classList.add('active');
+      document.getElementById(sec + '-specify').classList.add('show');
+    }
+  }
+
+  function confirmSpecify(sec) {
+    const specId  = sec + '-specify-date';
+    const dateVal = document.getElementById(specId).value;
+    if (!dateVal) { alert('Please pick a target date.'); return; }
+    const target  = parseDate(dateVal);
+    if (!target)  { alert('Invalid target date.'); return; }
+    calcWithTarget(sec, target);
+  }
+
+  function calcWithTarget(sec, targetDate) {
+    const pickerId  = sec === 's1' ? 'sl-picker' : 'claim-picker';
+    const resId     = sec === 's1' ? 'res1' : 'res2';
+    const inputDate = parseDate(document.getElementById(pickerId).value);
+    if (!inputDate) { alert('Please pick a valid date.'); return; }
+
+    const diff = diffCalc(inputDate, targetDate);
+    const box  = document.getElementById(resId);
+
+    // Auto-fill Section 3
+    if (sec === 's1') {
+      document.getElementById('s3-sl-picker').value = inputDate.toISOString().split('T');
+    } else {
+      document.getElementById('s3-claim-picker').value = inputDate.toISOString().split('T');
+    }
+
+    const isToday = targetDate.getTime() === today().getTime();
+    const toLabel = isToday ? 'Today (' + formatDate(targetDate) + ')' : formatDate(targetDate);
+
+    box.innerHTML = buildResultHTML(diff, formatDate(inputDate), toLabel)
+                  + statusBadge(inputDate, targetDate, 'today');
+    box.classList.add('show');
+  }
+
+  // ── Section 3 ─────────────────────────────────────────────
+  function calcSection3() {
+    const slDate    = parseDate(document.getElementById('s3-sl-picker').value);
+    const claimDate = parseDate(document.getElementById('s3-claim-picker').value);
+    if (!slDate)    { alert('Please enter a valid SL date in Section 3.');    return; }
+    if (!claimDate) { alert('Please enter a valid Claim date in Section 3.'); return; }
+
+    const diff = diffCalc(slDate, claimDate);
+    const box  = document.getElementById('res3');
+    box.innerHTML = buildResultHTML(diff, formatDate(slDate), formatDate(claimDate))
+                  + statusBadge(slDate, claimDate, 'claim');
+    box.classList.add('show');
+  }
+
+  // ── Help Modal ────────────────────────────────────────────
+  function toggleHelp() {
+    document.getElementById('helpModal').classList.toggle('show');
+  }
+
+  // ── Export CSV ────────────────────────────────────────────
+  function exportCSV() {
+    const t          = today();
+    const slDate     = parseDate(document.getElementById('sl-picker').value);
+    const claimDate  = parseDate(document.getElementById('claim-picker').value);
+    const s3Sl       = parseDate(document.getElementById('s3-sl-picker').value);
+    const s3Claim    = parseDate(document.getElementById('s3-claim-picker').value);
+
+    const rows = [];
+    rows.push(['SL Date Calculator — Export']);
+    rows.push(['Generated on', formatDate(t)]);
+    rows.push(['Made by', 'mike_tubel']);
+    rows.push(['']);
+
+    rows.push(['SECTION 1 — SL Date']);
+    rows.push(['Field', 'Value']);
+    if (slDate) {
+      const d = diffCalc(slDate, t);
+      rows.push(['SL Date',        formatDate(slDate)]);
+      rows.push(['Compared To',    formatDate(t)]);
+      rows.push(['Days Elapsed',   Math.abs(d.days) + ' days']);
+      rows.push(['Weeks Elapsed',  Math.abs(parseFloat(d.weeks)).toFixed(2) + ' wks']);
+      rows.push(['Months Elapsed', Math.abs(parseFloat(d.months)).toFixed(2) + ' mo']);
+      rows.push(['Status',
+        d.diffMs === 0 ? 'Same Day' :
+        d.diffMs >  0 ? 'Date is in the Past' :
+                        'Future Date (not yet occurred)']);
+    } else {
+      rows.push(['No SL date entered', '']);
+    }
+
+    rows.push(['']);
+    rows.push(['SECTION 2 — Claim Date']);
+    rows.push(['Field', 'Value']);
+    if (claimDate) {
+      const d = diffCalc(claimDate, t);
+      rows.push(['Claim Date',     formatDate(claimDate)]);
+      rows.push(['Compared To',    formatDate(t)]);
+      rows.push(['Days Elapsed',   Math.abs(d.days) + ' days']);
+      rows.push(['Weeks Elapsed',  Math.abs(parseFloat(d.weeks)).toFixed(2) + ' wks']);
+      rows.push(['Months Elapsed', Math.abs(parseFloat(d.months)).toFixed(2) + ' mo']);
+      rows.push(['Status',
+        d.diffMs === 0 ? 'Same Day' :
+        d.diffMs >  0 ? 'Date is in the Past' :
+                        'Future Date (not yet occurred)']);
+    } else {
+      rows.push(['No Claim date entered', '']);
+    }
+
+    rows.push(['']);
+    rows.push(['SECTION 3 — SL Date to Claim Date']);
+    rows.push(['Field', 'Value']);
+    if (s3Sl && s3Claim) {
+      const d = diffCalc(s3Sl, s3Claim);
+      rows.push(['SL Date',    formatDate(s3Sl)]);
+      rows.push(['Claim Date', formatDate(s3Claim)]);
+      rows.push(['Days',       Math.abs(d.days) + ' days']);
+      rows.push(['Weeks',      Math.abs(parseFloat(d.weeks)).toFixed(2) + ' wks']);
+      rows.push(['Months',     Math.abs(parseFloat(d.months)).toFixed(2) + ' mo']);
+      rows.push(['Status',
+        d.diffMs === 0 ? 'Claim filed Same Day as SL' :
+        d.diffMs >  0 ? 'Claim filed After SL (normal)' :
+                        'Advanced Claim — filed Before SL!']);
+    } else {
+      rows.push(['No dates entered for Section 3', '']);
+    }
+
+    const BOM = '\uFEFF';
+    const csv = rows.map(r =>
+      r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')
+    ).join('\n');
+
+    const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `SL_Results_${t.toISOString().split('T')}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    alert('✅ Export successful! Open the .csv file in Excel.');
+  }
+
+  // ── Download Excel Template ───────────────────────────────
+  function downloadTemplate() {
+    const t           = today();
+    const todaySerial = toExcelSerial(t);
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+  xmlns:x="urn:schemas-microsoft-com:office:excel"
+  xmlns:o="urn:schemas-microsoft-com:office:office">
+  <Styles>
+    <Style ss:ID="title">
+      <Font ss:Bold="1" ss:Size="14" ss:Color="#FFFFFF"/>
+      <Interior ss:Color="#4F8EF7" ss:Pattern="Solid"/>
+      <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+    </Style>
+    <Style ss:ID="subNote">
+      <Font ss:Italic="1" ss:Size="9" ss:Color="#718096"/>
+      <Interior ss:Color="#EDF2F7" ss:Pattern="Solid"/>
+    </Style>
+    <Style ss:ID="sectionHead">
+      <Font ss:Bold="1" ss:Color="#FFFFFF" ss:Size="11"/>
+      <Interior ss:Color="#6C63FF" ss:Pattern="Solid"/>
+    </Style>
+    <Style ss:ID="label">
+      <Font ss:Bold="1" ss:Size="10" ss:Color="#2D3748"/>
+      <Interior ss:Color="#EBF4FF" ss:Pattern="Solid"/>
+    </Style>
+    <Style ss:ID="inputCell">
+      <Font ss:Size="10" ss:Color="#2D3748"/>
+      <Interior ss:Color="#FFFBEA" ss:Pattern="Solid"/>
+      <NumberFormat ss:Format="DD-MMM-YYYY"/>
+      <Borders>
+        <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#F6AD55"/>
+        <Border ss:Position="Top"    ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#F6AD55"/>
+        <Border ss:Position="Left"   ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#F6AD55"/>
+        <Border ss:Position="Right"  ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#F6AD55"/>
+      </Borders>
+    </Style>
+    <Style ss:ID="todayCell">
+      <Font ss:Size="10" ss:Color="#2D3748"/>
+      <Interior ss:Color="#F0FFF4" ss:Pattern="Solid"/>
+      <NumberFormat ss:Format="DD-MMM-YYYY"/>
+    </Style>
+    <Style ss:ID="formulaInt">
+      <Font ss:Bold="1" ss:Color="#276749"/>
+      <Interior ss:Color="#F0FFF4" ss:Pattern="Solid"/>
+      <Alignment ss:Horizontal="Center"/>
+      <NumberFormat ss:Format="0"/>
+    </Style>
+    <Style ss:ID="formulaDec">
+      <Font ss:Bold="1" ss:Color="#276749"/>
+      <Interior ss:Color="#F0FFF4" ss:Pattern="Solid"/>
+      <Alignment ss:Horizontal="Center"/>
+      <NumberFormat ss:Format="0.00"/>
+    </Style>
+    <Style ss:ID="statusCell">
+      <Font ss:Bold="1" ss:Size="10" ss:Color="#2D3748"/>
+      <Interior ss:Color="#EBF8FF" ss:Pattern="Solid"/>
+    </Style>
+    <Style ss:ID="header">
+      <Font ss:Bold="1" ss:Color="#FFFFFF" ss:Size="10"/>
+      <Interior ss:Color="#4A5568" ss:Pattern="Solid"/>
+      <Alignment ss:Horizontal="Center"/>
+    </Style>
+    <Style ss:ID="inputHint">
+      <Font ss:Italic="1" ss:Size="9" ss:Color="#E67E22" ss:Bold="1"/>
+      <Interior ss:Color="#FFFBEA" ss:Pattern="Solid"/>
+    </Style>
+    <Style ss:ID="footerStyle">
+      <Font ss:Italic="1" ss:Size="9" ss:Color="#A0AEC0"/>
+      <Alignment ss:Horizontal="Center"/>
+    </Style>
+  </Styles>
+  <Worksheet ss:Name="SL Calculator">
+    <Table ss:DefaultColumnWidth="150">
+      <Column ss:Width="240"/>
+      <Column ss:Width="180"/>
+      <Column ss:Width="260"/>
+      <Row ss:Height="32">
+        <Cell ss:StyleID="title" ss:MergeAcross="2">
+          <Data ss:Type="String">SL Date Calculator — Excel Template</Data>
+        </Cell>
+      </Row>
+      <Row ss:Height="18">
+        <Cell ss:StyleID="subNote" ss:MergeAcross="2">
+          <Data ss:Type="String">Generated: ${formatDate(t)}   |   Made by mike_tubel   |   Yellow cells = enter your dates</Data>
+        </Cell>
+      </Row>
+      <Row ss:Height="8"><Cell><Data ss:Type="String"></Data></Cell></Row>
+      <Row ss:Height="22">
+        <Cell ss:StyleID="header"><Data ss:Type="String">Field</Data></Cell>
+        <Cell ss:StyleID="header"><Data ss:Type="String">Date / Value</Data></Cell>
+        <Cell ss:StyleID="header"><Data ss:Type="String">Notes</Data></Cell>
+      </Row>
+      <Row ss:Height="22">
+        <Cell ss:StyleID="sectionHead" ss:MergeAcross="2">
+          <Data ss:Type="String">SECTION 1 — Study Leave (SL) Date to Today
+</Data>
+        </Cell>
+      </Row>
+      <Row>
+        <Cell ss:StyleID="label"><Data ss:Type="String">SL Date (enter here)</Data></Cell>
+        <Cell ss:StyleID="inputCell"><Data ss:Type="String">ENTER DATE HERE</Data></Cell>
+        <Cell ss:StyleID="inputHint"><Data ss:Type="String">Type date e.g. 03-Apr-2025 then format as date</Data></Cell>
+      </Row>
+      <Row>
+        <Cell ss:StyleID="label"><Data ss:Type="String">Today's Date</Data></Cell>
+        <Cell ss:StyleID="todayCell">
+          <ss:Formula>=TODAY()</ss:Formula>
+          <Data ss:Type="Number">${todaySerial}</Data>
+        </Cell>
+        <Cell ss:StyleID="subNote"><Data ss:Type="String">Auto-updates every day</Data></Cell>
+      </Row>
+      <Row>
+        <Cell ss:StyleID="label"><Data ss:Type="String">Days Elapsed</Data></Cell>
+        <Cell ss:StyleID="formulaInt">
+          <ss:Formula>=IF(ISNUMBER(B6),B7-B6,"Enter SL date first")</ss:Formula>
+        </Cell>
+        <Cell ss:StyleID="subNote"><Data ss:Type="String">Formula: Today minus SL Date</Data></Cell>
+      </Row>
+      <Row>
+        <Cell ss:StyleID="label"><Data ss:Type="String">Weeks Elapsed</Data></Cell>
+        <Cell ss:StyleID="formulaDec">
+          <ss:Formula>=IF(ISNUMBER(B6),(B7-B6)/7,"Enter SL date first")</ss:Formula>
+        </Cell>
+        <Cell ss:StyleID="subNote"><Data ss:Type="String">Formula: Days divided by 7</Data></Cell>
+      </Row>
+      <Row>
+        <Cell ss:StyleID="label"><Data ss:Type="String">Months Elapsed</Data></Cell>
+        <Cell ss:StyleID="formulaDec">
+          <ss:Formula>=IF(ISNUMBER(B6),(B7-B6)/30.44,"Enter SL date first")</ss:Formula>
+        </Cell>
+        <Cell ss:StyleID="subNote"><Data ss:Type="String">Formula: Days divided by 30.44</Data></Cell>
+      </Row>
+      <Row>
+        <Cell ss:StyleID="label"><Data ss:Type="String">Status</Data></Cell>
+        <Cell ss:StyleID="statusCell">
+          <ss:Formula>=IF(ISNUMBER(B6),IF(B6=B7,"Same as Today",IF(B6&lt;B7,"Date is in the Past","Future Date not yet occurred")),"Enter SL date first")</ss:Formula>
+        </Cell>
+        <Cell ss:StyleID="subNote"><Data ss:Type="String">Auto status check</Data></Cell>
+      </Row>
+      <Row ss:Height="8"><Cell><Data ss:Type="String"></Data></Cell></Row>
+      <Row ss:Height="22">
+        <Cell ss:StyleID="sectionHead" ss:MergeAcross="2">
+          <Data ss:Type="String">SECTION 2 — Claim Date to Today</Data>
+        </Cell>
+      </Row>
+      <Row>
+        <Cell ss:StyleID="label"><Data ss:Type="String">Claim Date (enter here)</Data></Cell>
+        <Cell ss:StyleID="inputCell"><Data ss:Type="String">ENTER DATE HERE</Data></Cell>
+        <Cell ss:StyleID="inputHint"><Data ss:Type="String">Type date e.g. 03-Apr-2025 then format as date</Data></Cell>
+      </Row>
+      <Row>
+        <Cell ss:StyleID="label"><Data ss:Type="String">Today's Date</Data></Cell>
+        <Cell ss:StyleID="todayCell">
+          <ss:Formula>=TODAY()</ss:Formula>
+          <Data ss:Type="Number">${todaySerial}</Data>
+        </Cell>
+        <Cell ss:StyleID="subNote"><Data ss:Type="String">Auto-updates every day</Data></Cell>
+      </Row>
+      <Row>
+        <Cell ss:StyleID="label"><Data ss:Type="String">Days Elapsed</Data></Cell>
+        <Cell ss:StyleID="formulaInt">
+          <ss:Formula>=IF(ISNUMBER(B13),B14-B13,"Enter Claim date first")</ss:Formula>
+        </Cell>
+        <Cell ss:StyleID="subNote"><Data ss:Type="String">Formula: Today minus Claim Date</Data></Cell>
+      </Row>
+      <Row>
+        <Cell ss:StyleID="label"><Data ss:Type="String">Weeks Elapsed</Data></Cell>
+        <Cell ss:StyleID="formulaDec">
+          <ss:Formula>=IF(ISNUMBER(B13),(B14-B13)/7,"Enter Claim date first")</ss:Formula>
+        </Cell>
+        <Cell ss:StyleID="subNote"><Data ss:Type="String">Formula: Days divided by 7</Data></Cell>
+      </Row>
+      <Row>
+        <Cell ss:StyleID="label"><Data ss:Type="String">Months Elapsed</Data></Cell>
+        <Cell ss:StyleID="formulaDec">
+          <ss:Formula>=IF(ISNUMBER(B13),(B14-B13)/30.44,"Enter Claim date first")</ss:Formula>
+        </Cell>
+        <Cell ss:StyleID="subNote"><Data ss:Type="String">Formula: Days divided by 30.44</Data></Cell>
+      </Row>
+      <Row>
+        <Cell ss:StyleID="label"><Data ss:Type="String">Status</Data></Cell>
+        <Cell ss:StyleID="statusCell">
+          <ss:Formula>=IF(ISNUMBER(B13),IF(B13=B14,"Same as Today",IF(B13&lt;B14,"Date is in the Past","Future Date not yet occurred")),"Enter Claim date first")</ss:Formula>
+        </Cell>
+        <Cell ss:StyleID="subNote"><Data ss:Type="String">Auto status check</Data></Cell>
+      </Row>
+      <Row ss:Height="8"><Cell><Data ss:Type="String"></Data></Cell></Row>
+      <Row ss:Height="22">
+        <Cell ss:StyleID="sectionHead" ss:MergeAcross="2">
+          <Data ss:Type="String">SECTION 3 — SL Date to Claim Date</Data>
+        </Cell>
+      </Row>
+      <Row>
+        <Cell ss:StyleID="label"><Data ss:Type="String">SL Date (enter here)</Data></Cell>
+        <Cell ss:StyleID="inputCell"><Data ss:Type="String">ENTER DATE HERE</Data></Cell>
+        <Cell ss:StyleID="inputHint"><Data ss:Type="String">Type date e.g. 03-Apr-2025 then format as date</Data></Cell>
+      </Row>
+      <Row>
+        <Cell ss:StyleID="label"><Data ss:Type="String">Claim Date (enter here)</Data></Cell>
+        <Cell ss:StyleID="inputCell"><Data ss:Type="String">ENTER DATE HERE</Data></Cell>
+        <Cell ss:StyleID="inputHint"><Data ss:Type="String">Type date e.g. 03-Apr-2025 then format as date</Data></Cell>
+      </Row>
+      <Row>
+        <Cell ss:StyleID="label"><Data ss:Type="String">Days (SL to Claim)</Data></Cell>
+        <Cell ss:StyleID="formulaInt">
+          <ss:Formula>=IF(AND(ISNUMBER(B21),ISNUMBER(B22)),B22-B21,"Enter both dates first")</ss:Formula>
+        </Cell>
+        <Cell ss:StyleID="subNote"><Data ss:Type="String">Formula: Claim Date minus SL Date</Data></Cell>
+      </Row>
+      <Row>
+        <Cell ss:StyleID="label"><Data ss:Type="String">Weeks (SL to Claim)</Data></Cell>
+        <Cell ss:StyleID="formulaDec">
+          <ss:Formula>=IF(AND(ISNUMBER(B21),ISNUMBER(B22)),(B22-B21)/7,"Enter both dates first")</ss:Formula>
+        </Cell>
+        <Cell ss:StyleID="subNote"><Data ss:Type="String">Formula: Days divided by 7</Data></Cell>
+      </Row>
+      <Row>
+        <Cell ss:StyleID="label"><Data ss:Type="String">Months (SL to Claim)</Data></Cell>
+        <Cell ss:StyleID="formulaDec">
+          <ss:Formula>=IF(AND(ISNUMBER(B21),ISNUMBER(B22)),(B22-B21)/30.44,"Enter both dates first")</ss:Formula>
+        </Cell>
+        <Cell ss:StyleID="subNote"><Data ss:Type="String">Formula: Days divided by 30.44</Data></Cell>
+      </Row>
+      <Row>
+        <Cell ss:StyleID="label"><Data ss:Type="String">Status</Data></Cell>
+        <Cell ss:StyleID="statusCell">
+          <ss:Formula>=IF(AND(ISNUMBER(B21),ISNUMBER(B22)),IF(B21=B22,"Claim filed Same Day as SL",IF(B21&
+lt;B22,"Claim filed After SL (normal)","Advanced Claim filed Before SL!")),"Enter both dates first")</ss:Formula>
+        </Cell>
+        <Cell ss:StyleID="subNote"><Data ss:Type="String">Auto status check</Data></Cell>
+      </Row>
+      <Row ss:Height="8"><Cell><Data ss:Type="String"></Data></Cell></Row>
+      <Row>
+        <Cell ss:StyleID="footerStyle" ss:MergeAcross="2">
+          <Data ss:Type="String">Made by mike_tubel · SL Date Calculator v1.0 · Yellow cells = input · Green cells = auto-calculated</Data>
+        </Cell>
+      </Row>
+    </Table>
+  </Worksheet>
+</Workbook>`;
+
+    const blob = new Blob([xml], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `SL_Calculator_Template_${t.toISOString().split('T')}.xls`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    alert('✅ Template downloaded! Open in Excel and type your dates in the yellow cells.');
+  }
+
+</script>
+</body>
+</html>
