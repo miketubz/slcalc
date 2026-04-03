@@ -4,6 +4,9 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>SL Date Calculator</title>
+
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -638,264 +641,103 @@ footer {
     URL.revokeObjectURL(url);
     alert('✅ Export successful! Open the .csv file in Excel.');
   }
-
-  // ── Download Excel Template ───────────────────────────────
   function downloadTemplate() {
-    const t           = today();
-    const todaySerial = toExcelSerial(t);
+    const t = today();
 
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<?mso-application progid="Excel.Sheet"?>
-<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
-  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
-  xmlns:x="urn:schemas-microsoft-com:office:excel"
-  xmlns:o="urn:schemas-microsoft-com:office:office">
-  <Styles>
-    <Style ss:ID="title">
-      <Font ss:Bold="1" ss:Size="14" ss:Color="#FFFFFF"/>
-      <Interior ss:Color="#4F8EF7" ss:Pattern="Solid"/>
-      <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
-    </Style>
-    <Style ss:ID="subNote">
-      <Font ss:Italic="1" ss:Size="9" ss:Color="#718096"/>
-      <Interior ss:Color="#EDF2F7" ss:Pattern="Solid"/>
-    </Style>
-    <Style ss:ID="sectionHead">
-      <Font ss:Bold="1" ss:Color="#FFFFFF" ss:Size="11"/>
-      <Interior ss:Color="#6C63FF" ss:Pattern="Solid"/>
-    </Style>
-    <Style ss:ID="label">
-      <Font ss:Bold="1" ss:Size="10" ss:Color="#2D3748"/>
-      <Interior ss:Color="#EBF4FF" ss:Pattern="Solid"/>
-    </Style>
-    <Style ss:ID="inputCell">
-      <Font ss:Size="10" ss:Color="#2D3748"/>
-      <Interior ss:Color="#FFFBEA" ss:Pattern="Solid"/>
-      <NumberFormat ss:Format="DD-MMM-YYYY"/>
-      <Borders>
-        <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#F6AD55"/>
-        <Border ss:Position="Top"    ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#F6AD55"/>
-        <Border ss:Position="Left"   ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#F6AD55"/>
-        <Border ss:Position="Right"  ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#F6AD55"/>
-      </Borders>
-    </Style>
-    <Style ss:ID="todayCell">
-      <Font ss:Size="10" ss:Color="#2D3748"/>
-      <Interior ss:Color="#F0FFF4" ss:Pattern="Solid"/>
-      <NumberFormat ss:Format="DD-MMM-YYYY"/>
-    </Style>
-    <Style ss:ID="formulaInt">
-      <Font ss:Bold="1" ss:Color="#276749"/>
-      <Interior ss:Color="#F0FFF4" ss:Pattern="Solid"/>
-      <Alignment ss:Horizontal="Center"/>
-      <NumberFormat ss:Format="0"/>
-    </Style>
-    <Style ss:ID="formulaDec">
-      <Font ss:Bold="1" ss:Color="#276749"/>
-      <Interior ss:Color="#F0FFF4" ss:Pattern="Solid"/>
-      <Alignment ss:Horizontal="Center"/>
-      <NumberFormat ss:Format="0.00"/>
-    </Style>
-    <Style ss:ID="statusCell">
-      <Font ss:Bold="1" ss:Size="10" ss:Color="#2D3748"/>
-      <Interior ss:Color="#EBF8FF" ss:Pattern="Solid"/>
-    </Style>
-    <Style ss:ID="header">
-      <Font ss:Bold="1" ss:Color="#FFFFFF" ss:Size="10"/>
-      <Interior ss:Color="#4A5568" ss:Pattern="Solid"/>
-      <Alignment ss:Horizontal="Center"/>
-    </Style>
-    <Style ss:ID="inputHint">
-      <Font ss:Italic="1" ss:Size="9" ss:Color="#E67E22" ss:Bold="1"/>
-      <Interior ss:Color="#FFFBEA" ss:Pattern="Solid"/>
-    </Style>
-    <Style ss:ID="footerStyle">
-      <Font ss:Italic="1" ss:Size="9" ss:Color="#A0AEC0"/>
-      <Alignment ss:Horizontal="Center"/>
-    </Style>
-  </Styles>
-  <Worksheet ss:Name="SL Calculator">
-    <Table ss:DefaultColumnWidth="150">
-      <Column ss:Width="240"/>
-      <Column ss:Width="180"/>
-      <Column ss:Width="260"/>
-      <Row ss:Height="32">
-        <Cell ss:StyleID="title" ss:MergeAcross="2">
-          <Data ss:Type="String">SL Date Calculator — Excel Template</Data>
-        </Cell>
-      </Row>
-      <Row ss:Height="18">
-        <Cell ss:StyleID="subNote" ss:MergeAcross="2">
-          <Data ss:Type="String">Generated: ${formatDate(t)}   |   Made by mike_tubel   |   Yellow cells = enter your dates</Data>
-        </Cell>
-      </Row>
-      <Row ss:Height="8"><Cell><Data ss:Type="String"></Data></Cell></Row>
-      <Row ss:Height="22">
-        <Cell ss:StyleID="header"><Data ss:Type="String">Field</Data></Cell>
-        <Cell ss:StyleID="header"><Data ss:Type="String">Date / Value</Data></Cell>
-        <Cell ss:StyleID="header"><Data ss:Type="String">Notes</Data></Cell>
-      </Row>
-      <Row ss:Height="22">
-        <Cell ss:StyleID="sectionHead" ss:MergeAcross="2">
-          <Data ss:Type="String">SECTION 1 — Study Leave (SL) Date to Today
-</Data>
-        </Cell>
-      </Row>
-      <Row>
-        <Cell ss:StyleID="label"><Data ss:Type="String">SL Date (enter here)</Data></Cell>
-        <Cell ss:StyleID="inputCell"><Data ss:Type="String">ENTER DATE HERE</Data></Cell>
-        <Cell ss:StyleID="inputHint"><Data ss:Type="String">Type date e.g. 03-Apr-2025 then format as date</Data></Cell>
-      </Row>
-      <Row>
-        <Cell ss:StyleID="label"><Data ss:Type="String">Today's Date</Data></Cell>
-        <Cell ss:StyleID="todayCell">
-          <ss:Formula>=TODAY()</ss:Formula>
-          <Data ss:Type="Number">${todaySerial}</Data>
-        </Cell>
-        <Cell ss:StyleID="subNote"><Data ss:Type="String">Auto-updates every day</Data></Cell>
-      </Row>
-      <Row>
-        <Cell ss:StyleID="label"><Data ss:Type="String">Days Elapsed</Data></Cell>
-        <Cell ss:StyleID="formulaInt">
-          <ss:Formula>=IF(ISNUMBER(B6),B7-B6,"Enter SL date first")</ss:Formula>
-        </Cell>
-        <Cell ss:StyleID="subNote"><Data ss:Type="String">Formula: Today minus SL Date</Data></Cell>
-      </Row>
-      <Row>
-        <Cell ss:StyleID="label"><Data ss:Type="String">Weeks Elapsed</Data></Cell>
-        <Cell ss:StyleID="formulaDec">
-          <ss:Formula>=IF(ISNUMBER(B6),(B7-B6)/7,"Enter SL date first")</ss:Formula>
-        </Cell>
-        <Cell ss:StyleID="subNote"><Data ss:Type="String">Formula: Days divided by 7</Data></Cell>
-      </Row>
-      <Row>
-        <Cell ss:StyleID="label"><Data ss:Type="String">Months Elapsed</Data></Cell>
-        <Cell ss:StyleID="formulaDec">
-          <ss:Formula>=IF(ISNUMBER(B6),(B7-B6)/30.44,"Enter SL date first")</ss:Formula>
-        </Cell>
-        <Cell ss:StyleID="subNote"><Data ss:Type="String">Formula: Days divided by 30.44</Data></Cell>
-      </Row>
-      <Row>
-        <Cell ss:StyleID="label"><Data ss:Type="String">Status</Data></Cell>
-        <Cell ss:StyleID="statusCell">
-          <ss:Formula>=IF(ISNUMBER(B6),IF(B6=B7,"Same as Today",IF(B6&lt;B7,"Date is in the Past","Future Date not yet occurred")),"Enter SL date first")</ss:Formula>
-        </Cell>
-        <Cell ss:StyleID="subNote"><Data ss:Type="String">Auto status check</Data></Cell>
-      </Row>
-      <Row ss:Height="8"><Cell><Data ss:Type="String"></Data></Cell></Row>
-      <Row ss:Height="22">
-        <Cell ss:StyleID="sectionHead" ss:MergeAcross="2">
-          <Data ss:Type="String">SECTION 2 — Claim Date to Today</Data>
-        </Cell>
-      </Row>
-      <Row>
-        <Cell ss:StyleID="label"><Data ss:Type="String">Claim Date (enter here)</Data></Cell>
-        <Cell ss:StyleID="inputCell"><Data ss:Type="String">ENTER DATE HERE</Data></Cell>
-        <Cell ss:StyleID="inputHint"><Data ss:Type="String">Type date e.g. 03-Apr-2025 then format as date</Data></Cell>
-      </Row>
-      <Row>
-        <Cell ss:StyleID="label"><Data ss:Type="String">Today's Date</Data></Cell>
-        <Cell ss:StyleID="todayCell">
-          <ss:Formula>=TODAY()</ss:Formula>
-          <Data ss:Type="Number">${todaySerial}</Data>
-        </Cell>
-        <Cell ss:StyleID="subNote"><Data ss:Type="String">Auto-updates every day</Data></Cell>
-      </Row>
-      <Row>
-        <Cell ss:StyleID="label"><Data ss:Type="String">Days Elapsed</Data></Cell>
-        <Cell ss:StyleID="formulaInt">
-          <ss:Formula>=IF(ISNUMBER(B13),B14-B13,"Enter Claim date first")</ss:Formula>
-        </Cell>
-        <Cell ss:StyleID="subNote"><Data ss:Type="String">Formula: Today minus Claim Date</Data></Cell>
-      </Row>
-      <Row>
-        <Cell ss:StyleID="label"><Data ss:Type="String">Weeks Elapsed</Data></Cell>
-        <Cell ss:StyleID="formulaDec">
-          <ss:Formula>=IF(ISNUMBER(B13),(B14-B13)/7,"Enter Claim date first")</ss:Formula>
-        </Cell>
-        <Cell ss:StyleID="subNote"><Data ss:Type="String">Formula: Days divided by 7</Data></Cell>
-      </Row>
-      <Row>
-        <Cell ss:StyleID="label"><Data ss:Type="String">Months Elapsed</Data></Cell>
-        <Cell ss:StyleID="formulaDec">
-          <ss:Formula>=IF(ISNUMBER(B13),(B14-B13)/30.44,"Enter Claim date first")</ss:Formula>
-        </Cell>
-        <Cell ss:StyleID="subNote"><Data ss:Type="String">Formula: Days divided by 30.44</Data></Cell>
-      </Row>
-      <Row>
-        <Cell ss:StyleID="label"><Data ss:Type="String">Status</Data></Cell>
-        <Cell ss:StyleID="statusCell">
-          <ss:Formula>=IF(ISNUMBER(B13),IF(B13=B14,"Same as Today",IF(B13&lt;B14,"Date is in the Past","Future Date not yet occurred")),"Enter Claim date first")</ss:Formula>
-        </Cell>
-        <Cell ss:StyleID="subNote"><Data ss:Type="String">Auto status check</Data></Cell>
-      </Row>
-      <Row ss:Height="8"><Cell><Data ss:Type="String"></Data></Cell></Row>
-      <Row ss:Height="22">
-        <Cell ss:StyleID="sectionHead" ss:MergeAcross="2">
-          <Data ss:Type="String">SECTION 3 — SL Date to Claim Date</Data>
-        </Cell>
-      </Row>
-      <Row>
-        <Cell ss:StyleID="label"><Data ss:Type="String">SL Date (enter here)</Data></Cell>
-        <Cell ss:StyleID="inputCell"><Data ss:Type="String">ENTER DATE HERE</Data></Cell>
-        <Cell ss:StyleID="inputHint"><Data ss:Type="String">Type date e.g. 03-Apr-2025 then format as date</Data></Cell>
-      </Row>
-      <Row>
-        <Cell ss:StyleID="label"><Data ss:Type="String">Claim Date (enter here)</Data></Cell>
-        <Cell ss:StyleID="inputCell"><Data ss:Type="String">ENTER DATE HERE</Data></Cell>
-        <Cell ss:StyleID="inputHint"><Data ss:Type="String">Type date e.g. 03-Apr-2025 then format as date</Data></Cell>
-      </Row>
-      <Row>
-        <Cell ss:StyleID="label"><Data ss:Type="String">Days (SL to Claim)</Data></Cell>
-        <Cell ss:StyleID="formulaInt">
-          <ss:Formula>=IF(AND(ISNUMBER(B21),ISNUMBER(B22)),B22-B21,"Enter both dates first")</ss:Formula>
-        </Cell>
-        <Cell ss:StyleID="subNote"><Data ss:Type="String">Formula: Claim Date minus SL Date</Data></Cell>
-      </Row>
-      <Row>
-        <Cell ss:StyleID="label"><Data ss:Type="String">Weeks (SL to Claim)</Data></Cell>
-        <Cell ss:StyleID="formulaDec">
-          <ss:Formula>=IF(AND(ISNUMBER(B21),ISNUMBER(B22)),(B22-B21)/7,"Enter both dates first")</ss:Formula>
-        </Cell>
-        <Cell ss:StyleID="subNote"><Data ss:Type="String">Formula: Days divided by 7</Data></Cell>
-      </Row>
-      <Row>
-        <Cell ss:StyleID="label"><Data ss:Type="String">Months (SL to Claim)</Data></Cell>
-        <Cell ss:StyleID="formulaDec">
-          <ss:Formula>=IF(AND(ISNUMBER(B21),ISNUMBER(B22)),(B22-B21)/30.44,"Enter both dates first")</ss:Formula>
-        </Cell>
-        <Cell ss:StyleID="subNote"><Data ss:Type="String">Formula: Days divided by 30.44</Data></Cell>
-      </Row>
-      <Row>
-        <Cell ss:StyleID="label"><Data ss:Type="String">Status</Data></Cell>
-        <Cell ss:StyleID="statusCell">
-          <ss:Formula>=IF(AND(ISNUMBER(B21),ISNUMBER(B22)),IF(B21=B22,"Claim filed Same Day as SL",IF(B21&
-lt;B22,"Claim filed After SL (normal)","Advanced Claim filed Before SL!")),"Enter both dates first")</ss:Formula>
-        </Cell>
-        <Cell ss:StyleID="subNote"><Data ss:Type="String">Auto status check</Data></Cell>
-      </Row>
-      <Row ss:Height="8"><Cell><Data ss:Type="String"></Data></Cell></Row>
-      <Row>
-        <Cell ss:StyleID="footerStyle" ss:MergeAcross="2">
-          <Data ss:Type="String">Made by mike_tubel · SL Date Calculator v1.0 · Yellow cells = input · Green cells = auto-calculated</Data>
-        </Cell>
-      </Row>
-    </Table>
-  </Worksheet>
-</Workbook>`;
+    const wb = XLSX.utils.book_new();
 
-    const blob = new Blob([xml], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = `SL_Calculator_Template_${t.toISOString().split('T')}.xls`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    alert('✅ Template downloaded! Open in Excel and type your dates in the yellow cells.');
+    // ── Row data: [Field, Value, Notes]
+    const rows = [
+      // Title
+      ["SL Date Calculator — Excel Template", "", ""],
+      ["Generated: " + formatDate(t) + "   |   Made by mike_tubel   |   Replace yellow cells with your actual dates", "", ""],
+      ["", "", ""],
+
+      // Headers
+      ["Field", "Date / Value", "Notes"],
+
+      // SECTION 1
+      ["SECTION 1 — Study Leave (SL) Date to Today", "", ""],
+      ["SL Date (replace sample)",  new Date(2025, 0, 15),  "⬅ REPLACE with your SL date"],
+      ["Today's Date",              {f: "TODAY()"},          "Auto-updates every time you open"],
+      ["Days Elapsed",              {f: "B7-B6"},            "= Today minus SL Date"],
+      ["Weeks Elapsed",             {f: "(B7-B6)/7"},        "= Days divided by 7"],
+      ["Months Elapsed",            {f: "(B7-B6)/30.44"},    "= Days divided by 30.44"],
+      ["Status",                    {f: 'IF(B6=B7,"Same as Today",IF(B6<B7,"Date is in the Past","Future Date not yet occurred"))'}, "Auto status"],
+      ["", "", ""],
+
+      // SECTION 2
+      ["SECTION 2 — Claim Date to Today", "", ""],
+      ["Claim Date (replace sample)", new Date(2025, 2, 1),  "⬅ REPLACE with your Claim date"],
+      ["Today's Date",                {f: "TODAY()"},         "Auto-updates every time you open"],
+      ["Days Elapsed",                {f: "B14-B13"},         "= Today minus Claim Date"],
+      ["Weeks Elapsed",               {f: "(B14-B13)/7"},     "= Days divided by 7"],
+      ["Months Elapsed",              {f: "(B14-B13)/30.44"}, "= Days divided by 30.44"],
+      ["Status",                      {f: 'IF(B13=B14,"Same as Today",IF(B13<B14,"Date is in the Past","Future Date not yet occurred"))'}, "Auto status"],
+      ["", "", ""],
+
+      // SECTION 3
+      ["SECTION 3 — SL Date to Claim Date", "", ""],
+      ["SL Date (replace sample)",    new Date(2025, 0, 15), "⬅ REPLACE with your SL date"],
+      ["Claim Date (replace sample)", new Date(2025, 2, 1),  "⬅ REPLACE with your Claim date"],
+      ["Days (SL to Claim)",          {f: "B22-B21"},        "= Claim Date minus SL Date"],
+      ["Weeks (SL to Claim)",         {f: "(B22-B21)/7"},    "= Days divided by 7"],
+      ["Months (SL to Claim)",        {f: "(B22-B21)/30.44"},"= Days divided by 30.44"],
+      ["Status",                      {f: 'IF(B21=B22,"Claim filed Same Day as SL",IF(B21<B22,"Claim filed After SL (normal)","Advanced Claim — filed Before SL!"))'}, "Auto status"],
+      ["", "", ""],
+      ["Made by mike_tubel · SL Date Calculator v1.0 · Yellow = replace dates · Green = auto-calculated", "", ""]
+    ];
+
+    // ── Build worksheet
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+
+    // ── Column widths
+    ws['!cols'] = [
+      { wch: 35 },
+      { wch: 22 },
+      { wch: 40 }
+    ];
+
+    // ── Format date cells as dates
+    const dateCells = ['B6', 'B7', 'B13', 'B14', 'B21', 'B22'];
+    dateCells.forEach(ref => {
+      if (ws[ref]) {
+        ws[ref].z = 'DD-MMM-YYYY';
+      }
+    });
+
+    // ── Format decimal formula cells
+    const decCells = ['B9', 'B10', 'B17', 'B18', 'B24', 'B25'];
+    decCells.forEach(ref => {
+      if (ws[ref]) ws[ref].z = '0.00';
+    });
+
+    // ── Format integer formula cells
+    const intCells = ['B8', 'B16', 'B23'];
+    intCells.forEach(ref => {
+      if (ws[ref]) ws[ref].z = '0';
+    });
+
+    // ── Apply styles using cell comments for yellow input indicator
+    // SheetJS community does not support full cell styling
+    // but we set number formats and add a note row at top
+
+    // ── Merge title cells A1:C1
+    ws['!merges'] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 2 } },
+      { s: { r: 1, c: 0 }, e: { r: 1, c: 2 } },
+      { s: { r: 4, c: 0 }, e: { r: 4, c: 2 } },
+      { s: { r: 12, c: 0 }, e: { r: 12, c: 2 } },
+      { s: { r: 20, c: 0 }, e: { r: 20, c: 2 } },
+      { s: { r: 28, c: 0 }, e: { r: 28, c: 2 } }
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, "SL Calculator");
+
+    // ── Download
+    XLSX.writeFile(wb, `SL_Calculator_Template_${t.toISOString().split('T')}.xlsx`);
+    alert('✅ Template downloaded! Open in Excel — replace B6, B13, B21 and B22 with your actual dates.');
   }
-
 </script>
 </body>
 </html>
