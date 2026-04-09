@@ -1,743 +1,166 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>SL Date Calculator</title>
-
-<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
-
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Study Leave Checker</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: 'Segoe UI', sans-serif;
-  background: #f0f4f8;
-  color: #2d3748;
-  min-height: 100vh;
-  padding: 16px;
-}
-header {
-  background: linear-gradient(135deg, #4f8ef7, #6c63ff);
-  color: white;
-  padding: 18px 20px 14px;
-  border-radius: 16px;
-  margin-bottom: 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 4px 15px rgba(79,142,247,0.3);
-}
-header h1 { font-size: 1.2rem; font-weight: 700; }
-header p  { font-size: 0.72rem; opacity: 0.85; margin-top: 2px; }
-.help-btn {
-  background: rgba(255,255,255,0.25);
-  border: 1.5px solid rgba(255,255,255,0.6);
-  color: white;
-  border-radius: 50%;
-  width: 34px; height: 34px;
-  font-size: 1rem; font-weight: 700;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background 0.2s;
-}
-.help-btn:hover { background: rgba(255,255,255,0.4); }
-.card {
-  background: white;
-  border-radius: 14px;
-  padding: 18px;
-  margin-bottom: 16px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
-}
-.card-title {
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #4f8ef7;
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.card-title .badge {
-  background: #4f8ef7;
-  color: white;
-  border-radius: 50%;
-  width: 20px; height: 20px;
-  font-size: 0.7rem;
-  display: flex; align-items: center; justify-content: center;
-}
-label {
-  display: block;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #4a5568;
-  margin-bottom: 5px;
-}
-.date-input {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  color: #2d3748;
-  background: #f7fafc;
-  outline: none;
-  transition: border 0.2s;
-  margin-bottom: 10px;
-}
-.date-input:focus { border-color: #4f8ef7; background: white; }
-.calc-btn {
-  background: linear-gradient(135deg, #4f8ef7, #6c63ff);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  padding: 10px 16px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity 0.2s;
-  width: 100%;
-  margin-bottom: 10px;
-}
-.calc-btn:hover { opacity: 0.88; }
-.option-row {
-  display: none;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-.option-row.show { display: flex; }
-.option-btn {
-  flex: 1;
-  padding: 9px 6px;
-  border-radius: 10px;
-  border: 1.5px solid #e2e8f0;
-  background: #f7fafc;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: #4a5568;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-align: center;
-}
-.option-btn:hover { border-color: #4f8ef7; color: #4f8ef7; }
-.option-btn.active {
-  background: #4f8ef7;
-  border-color: #4f8ef7;
-  color: white;
-}
-.specify-row {
-  display: none;
-  margin-bottom: 10px;
-}
-.specify-row.show { display: block; }
-.specify-row input {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1.5px solid #4f8ef7;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  color: #2d3748;
-  background: #ebf4ff;
-  outline: none;
-}
-.confirm-btn {
-  background: linear-gradient(135deg, #4f8ef7, #6c63ff);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  padding: 9px 16px;
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-  width: 100%;
-  margin-top: 6px;
-  transition: opacity 0.2s;
-}
-.confirm-btn:hover { opacity: 0.88; }
-.result-box {
-  display: none;
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1.5px solid #e2e8f0;
-}
-.result-box.show { display: block; }
-.result-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 14px;
-  font-size: 0.88rem;
-  border-bottom: 1px solid #f0f4f8;
-}
-.result-item:last-child { border-bottom: none; }
-.result-item:nth-child(even) { background: #f7fafc; }
-.result-label { color: #718096; font-weight: 500; }
-.result-value { font-weight: 700; color: #2d3748; font-size: 0.95rem; }
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  margin-top: 10px;
-}
-.status-same    { background: #ebf8ff; color: #2b6cb0; }
-.status-advance { background: #fff5f5; color: #c53030; }
-.status-past    { background: #f0fff4; color: #276749; }
-.export-btn {
-  width: 100%;
-  padding: 13px;
-  background: linear-gradient(135deg, #38a169, #2f855a);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  box-shadow: 0 4px 12px rgba(56,161,105,0.3);
-  transition: opacity 0.2s;
-  margin-bottom: 10px;
-}
-.export-btn:hover { opacity: 0.88; }
-.template-btn {
-  width: 100%;
-  padding: 12px 16px;
-  background: linear-gradient(135deg, #1d6f42, #207245);
-  color: white;
-  border: 2px solid #185c37;
-  border-radius: 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 12px;
-  box-shadow: 0 4px 12px rgba(29,111,66,0.35);
-  transition: opacity 0.2s;
-}
-.template-btn:hover { opacity: 0.88; }
-.template-btn-text-main { font-size: 0.85rem
-; font-weight: 700; }
-.template-btn-text-sub { font-size: 0.7rem; opacity: 0.85; margin-top: 2px; }
-.hint {
-  font-size: 0.73rem;
-  color: #a0aec0;
-  margin-bottom: 10px;
-}
-.modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  z-index: 100;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-.modal-overlay.show { display: flex; }
-.modal {
-  background: white;
-  border-radius: 16px;
-  padding: 24px 20px;
-  max-width: 420px;
-  width: 100%;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-}
-.modal h2 {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #4f8ef7;
-  margin-bottom: 14px;
-}
-.modal p, .modal li {
-  font-size: 0.83rem;
-  color: #4a5568;
-  line-height: 1.6;
-  margin-bottom: 6px;
-}
-.modal ul { padding-left: 18px; margin-bottom: 10px; }
-.modal-close {
-  margin-top: 16px;
-  width: 100%;
-  padding: 10px;
-  background: #4f8ef7;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-footer {
-  text-align: center;
-  font-size: 0.72rem;
-  color: #a0aec0;
-  margin-top: 16px;
-  padding-bottom: 10px;
-}
+  * { box-sizing: border-box; }
+  body { margin:0; font-family:"Segoe UI", Arial, sans-serif; background:#f5f7fb; color:#223; padding:18px; }
+  .wrap { max-width:980px; margin:0 auto; }
+  .hero { background:linear-gradient(135deg,#3b82f6,#6366f1); color:#fff; border-radius:18px; padding:20px; margin-bottom:18px; box-shadow:0 10px 28px rgba(59,130,246,.22); }
+  .hero h1 { margin:0 0 6px; font-size:1.45rem; }
+  .hero p { margin:0; opacity:.92; font-size:.92rem; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px; }
+  .card { background:#fff; border-radius:16px; padding:18px; box-shadow:0 6px 20px rgba(20,30,55,.06); margin-bottom:16px; }
+  .card h2 { margin:0 0 14px; font-size:1rem; color:#2563eb; }
+  label { display:block; margin:10px 0 6px; font-size:.84rem; font-weight:600; color:#334155; }
+  input, select { width:100%; padding:10px 12px; border:1px solid #d8e0ef; border-radius:10px; background:#fbfcff; font-size:.95rem; }
+  input:focus, select:focus { outline:none; border-color:#3b82f6; background:#fff; }
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .hint { margin-top:6px; font-size:.76rem; color:#64748b; }
+  .actions { display:flex; gap:10px; flex-wrap:wrap; }
+  button { border:0; border-radius:12px; padding:12px 16px; font-weight:700; cursor:pointer; }
+  .primary { background:linear-gradient(135deg,#2563eb,#4f46e5); color:#fff; box-shadow:0 8px 18px rgba(37,99,235,.22); }
+  .secondary { background:#e8eefc; color:#1e40af; }
+  .success { background:linear-gradient(135deg,#059669,#047857); color:#fff; }
+  .results { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:12px; }
+  .result { border:1px solid #e4e9f5; border-radius:14px; padding:14px; background:#fbfdff; }
+  .result .k { font-size:.76rem; text-transform:uppercase; letter-spacing:.06em; color:#64748b; margin-bottom:8px; font-weight:700; }
+  .result .v { font-size:1rem; font-weight:800; color:#0f172a; line-height:1.35; }
+  .pill { display:inline-block; padding:7px 10px; border-radius:999px; font-size:.76rem; font-weight:800; margin-top:10px; }
+  .ok { background:#dcfce7; color:#166534; }
+  .warn { background:#fef3c7; color:#92400e; }
+  .stop { background:#fee2e2; color:#991b1b; }
+  .info { background:#dbeafe; color:#1d4ed8; }
+  .listbox { background:#fff; border:1px solid #e4e9f5; border-radius:14px; padding:14px 16px; }
+  .listbox ul { margin:8px 0 0 18px; padding:0; }
+  .listbox li { margin:6px 0; }
+  .small { font-size:.82rem; color:#475569; }
+  .muted { color:#64748b; }
+  .footer { text-align:center; color:#64748b; font-size:.77rem; margin-top:14px; }
+  @media (max-width:640px) { .row2 { grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
-
-<header>
-  <div>
-    <h1>📅 SL Date Calculator</h1>
-    <p>Study Leave · Claim Date Tracker</p>
-    <p>by mike_tubel</p>
-  </div>
-  <button class="help-btn" onclick="toggleHelp()">?</button>
-</header>
-
-<!-- SECTION 1 -->
-<div class="card">
-  <div class="card-title"><span class="badge">1</span> Date of Study Leave (SL)</div>
-  <label>Pick a date</label>
-  <input type="date" id="sl-picker" class="date-input"/>
-  <button class="calc-btn" onclick="showOptions('s1')">Calculate</button>
-
-  <div class="option-row" id="s1-options">
-    <button class="option-btn" id="s1-opt1" onclick="selectOption('s1','current')">
-      📅 1. Current Date
-    </button>
-    <button class="option-btn" id="s1-opt2" onclick="selectOption('s1','specify')">
-      🗓️ 2. Specify Date
-    </button>
+<div class="wrap">
+  <div class="hero">
+    <h1>Study Leave Checker</h1>
+    <p>Simple single-file checker for form completeness, deadline, early reimbursement, and next-step guidance.</p>
   </div>
 
-  <div class="specify-row" id="s1-specify">
-    <label>Enter target date</label>
-    <input type="date" id="s1-specify-date" class="date-input" style="margin-bottom:6px;"/>
-    <button class="confirm-btn" onclick="confirmSpecify('s1')">Confirm &amp; Calculate</button>
-  </div>
-
-  <div class="result-box" id="res1"></div>
-</div>
-
-<!-- SECTION 2 -->
-<div class="card">
-  <div class="card-title"><span class="badge">2</span> Date of Claim</div>
-  <label>Pick a date</label>
-  <input type="date" id="claim-picker" class="date-input"/>
-  <button class="calc-btn" onclick="showOptions('s2')">Calculate</button>
-
-  <div class="option-row" id="s2-options">
-    <button class="option-btn" id="s2-opt1" onclick="selectOption('s2','current')">
-      📅 1. Current Date
-    </button>
-    <button class="option-btn" id="s2-opt2" onclick="selectOption('s2','specify')">
-      🗓️ 2. Specify Date
-    </button>
-  </div>
-
-  <div class="specify-row" id="s2-specify">
-    <label>Enter target date</label>
-    <input type="date" id="s2-specify-date" class="date-input" style="margin-bottom:6px;"/>
-    <button class="confirm-btn" onclick="confirmSpecify('s2')">Confirm &amp; Calculate</button>
-  </div>
-
-  <div class="result-box" id="res2"></div>
-</div>
-
-<!-- SECTION 3 -->
-<div class="card">
-  <div class="card-title"><span class="badge">3</span> SL Date → Claim Date</div>
-  <label>SL Date (auto-filled from Section 1 if set)</label>
-  <input type="date" id="s3-sl-picker" class="date-input"/>
-  <label>Claim Date (auto-filled from Section 2 if set)</label>
-  <input type="date" id="s3-claim-picker" class="date-input"/>
-  <button class="calc-btn" onclick="calcSection3()">Calculate</button>
-  <div class="result-box" id="res3"></div>
-</div>
-
-<!-- EXPORT CARD -->
-<div class="card">
-  <button class="export-btn" onclick="exportCSV()">
-    📥 Export Results to Excel (.csv)
-  </button>
-  <button class="template-btn" onclick="downloadTemplate()">
-    <span style="font-size:1.5rem;">📊</span>
-    <div>
-      <div class="template-btn-text-main">Get Excel Template</div>
-      <div class="template-btn-text-sub">Open &amp; calculate directly in Excel with built-in formulas</div>
+  <div class="grid">
+    <div class="card">
+      <h2>1. Basic details</h2>
+      <label>Name</label>
+      <input id="name" placeholder="Optional" />
+      <div class="row2">
+        <div><label>Staff group</label><select id="staffGroup"><option value="Consultant">Consultant</option><option value="SAS">SAS</option><option value="LED">LED</option></select></div>
+        <div><label>Expense type</label><select id="expenseType"><option value="course">Course / conference</option><option value="exam">Exam fee</option></select></div>
+      </div>
+      <div class="row2">
+        <div><label>SAS PAs / week</label><input id="pas" type="number" min="0" max="12" step="0.25" placeholder="Only if SAS" /></div>
+        <div><label>Claim amount (£)</label><input id="claimAmount" type="number" min="0" step="0.01" placeholder="Optional" /></div>
+      </div>
+      <div class="hint">For SAS, this tool gives a simple estimate based on PAs because your cases showed PA-linked allowance figures.</div>
     </div>
-  </button>
-</div>
 
-<footer>Made by mike_tubel &nbsp;·&nbsp; SL Date Calculator v1.0</footer>
-
-<!-- HELP MODAL -->
-<div class="modal-overlay" id="helpModal">
-  <div class="modal">
-    <h2>📖 How to Use</h2>
-    <p><strong>Section 1 – Date of SL:</strong><br>
-      Pick your Study Leave date then tap Calculate. Choose Current Date to compare with today, or Specify Date to compare with any date.</p>
-    <p><strong>Section 2 – Date of Claim:</strong><br>
-      Same as Section 1 but for your Claim date.</p>
-    <p><strong>Section 3 – SL to Claim:</strong><br>
-      Compares SL date vs Claim date directly. Auto-fills from Sections 1 &amp; 2.</p>
-    <hr style="margin:10px 0; border-color:#e2e8f0"/>
-    <p><strong>Status Indicators:</strong></p>
-    <ul>
-      <li>🟢 <strong>Past</strong> – Date already occurred</li>
-      <li>🔵 <strong>Same Day</strong> – Matches the compared date</li>
-      <li>🔴 <strong>Advanced Claim</strong> – Claim filed before SL happened</li>
-    </ul>
-    <hr style="margin:10px 0; border-color:#e2e8f0"/>
-    <p><strong>Export CSV:</strong> Downloads all results as a .csv file openable in Excel.</p>
-    <p><strong>Get Excel Template:</strong> Downloads a pre-built .xls file with live formulas. Type dates in yellow cells.</p>
-    <button class="modal-close" onclick="toggleHelp()">Got it!</button>
+    <div class="card">
+      <h2>2. Dates</h2>
+      <div class="row2">
+        <div><label>Event start date</label><input id="eventStart" type="date" /></div>
+        <div><label>Event end date</label><input id="eventEnd" type="date" /></div>
+      </div>
+      <div class="row2">
+        <div><label>Claim / review date</label><input id="claimDate" type="date" /></div>
+        <div><label>Contract end date</label><input id="contractEnd" type="date" /></div>
+      </div>
+      <div class="row2">
+        <div><label>Certificate start date</label><input id="certStart" type="date" /></div>
+        <div><label>Certificate end date</label><input id="certEnd" type="date" /></div>
+      </div>
+      <div class="hint">The 3-month rule is calculated from the <strong>event start date</strong>.</div>
+    </div>
   </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>3. Form checks</h2>
+      <div class="row2">
+        <div><label>Current form version used?</label><select id="currentForm"><option>Yes</option><option>No</option></select></div>
+        <div><label>Form signed?</label><select id="formSigned"><option>Yes</option><option>No</option></select></div>
+      </div>
+      <div class="row2">
+        <div><label>ES/CS signed?</label><select id="escsSigned"><option>Yes</option><option>No</option></select></div>
+        <div><label>Rota / manager signed?</label><select id="rotaSigned"><option>No</option><option>Yes</option></select></div>
+      </div>
+      <div class="row2">
+        <div><label>Checklist complete?</label><select id="checklist"><option>Yes</option><option>No</option></select></div>
+        <div><label>Valid e-signature?</label><select id="validESign"><option>Yes</option><option>No</option></select></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>4. Evidence checks</h2>
+      <div class="row2">
+        <div><label>Receipt acceptable?</label><select id="receiptOk"><option>Yes</option><option>No</option></select></div>
+        <div><label>Receipt in GBP?</label><select id="receiptGBP"><option>Yes</option><option>No</option></select></div>
+      </div>
+      <div class="row2">
+        <div><label>Attendance confirmed?</label><select id="attendance"><option>Yes</option><option>No</option></select></div>
+        <div><label>Early reimbursement requested?</label><select id="early"><option>No</option><option>Yes</option></select></div>
+      </div>
+      <div class="row2">
+        <div><label>Day-of-event expense?</label><select id="dayExpense"><option>No</option><option>Yes</option></select></div>
+        <div><label>Payroll extension granted?</label><select id="extension"><option>No</option><option>Yes</option></select></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card"><div class="actions"><button class="primary" onclick="runCheck()">Run check</button><button class="secondary" onclick="resetForm()">Reset</button><button class="success" onclick="exportCSV()">Export CSV</button></div></div>
+  <div class="card"><h2>5. Results</h2><div class="results" id="results"></div></div>
+  <div class="card"><h2>6. Missing items / next action</h2><div class="listbox"><div class="small muted">This keeps the output practical rather than technical.</div><ul id="missingList"><li>Run the check first.</li></ul></div></div>
+  <div class="footer">Simple single-file HTML tool · updated for study leave process checks</div>
 </div>
-
 <script>
-  // ── Helpers ───────────────────────────────────────────────
-  function today() {
-    const t = new Date();
-    t.setHours(0,0,0,0);
-    return t;
-  }
+function todayIso(){const d=new Date();d.setHours(0,0,0,0);return d.toISOString().slice(0,10);}document.getElementById('claimDate').value=todayIso();
+function parseDate(v){if(!v)return null;const d=new Date(v+'T00:00:00');return isNaN(d)?null:d;}
+function formatDate(d){if(!d)return '—';return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});}
+function addMonths(date,months){const d=new Date(date);d.setMonth(d.getMonth()+months);return d;}
+function addDays(date,days){const d=new Date(date);d.setDate(d.getDate()+days);return d;}
+function yn(id){return document.getElementById(id).value==='Yes';}
+function val(id){return document.getElementById(id).value;}
+function estimateAllowance(){const staff=val('staffGroup');const pas=parseFloat(val('pas'));if(staff==='Consultant')return{amount:600,note:'Standard guide amount'};if(staff==='LED')return{amount:400,note:'Standard guide amount; contract/team may adjust'};if(staff==='SAS'){if(!isNaN(pas)&&pas>0){const est=Math.min(600,Math.round(pas*100));return{amount:est,note:'Simple PA-based estimate from your SAS cases'};}return{amount:600,note:'Default SAS guide amount when PAs not entered'};}return{amount:0,note:''};}
+function formCheck(){const staff=val('staffGroup');const currentForm=yn('currentForm');const formSigned=yn('formSigned');const escs=yn('escsSigned');const rota=yn('rotaSigned');const checklist=yn('checklist');const eSign=yn('validESign');if(!currentForm)return{ok:false,text:'Wrong / old form version'};if(staff==='Consultant'){if(!formSigned)return{ok:false,text:'Consultant form not signed'};return{ok:true,text:'Consultant form check looks OK'};}if(staff==='SAS'){if(!escs)return{ok:false,text:'Missing ES/CS signature'};if(!checklist)return{ok:false,text:'Checklist incomplete'};if(!eSign)return{ok:false,text:'Invalid / typed signature'};return{ok:true,text:'SAS form check looks OK'};}if(staff==='LED'){if(!escs)return{ok:false,text:'Missing ES/CS signature'};if(!rota)return{ok:false,text:'Missing rota / manager signature'};if(!checklist)return{ok:false,text:'Checklist incomplete'};if(!eSign)return{ok:false,text:'Invalid / typed signature'};return{ok:true,text:'LED form check looks OK'};}return{ok:false,text:'Check staff group'};}
+function badge(type,text){return `<span class="pill ${type}">${text}</span>`;}
+function resultCard(label,value,badgeHtml=''){return `<div class="result"><div class="k">${label}</div><div class="v">${value}</div>${badgeHtml}</div>`;}
+function runCheck(){const name=val('name').trim();const expenseType=val('expenseType');const eventStart=parseDate(val('eventStart'));const eventEnd=parseDate(val('eventEnd'));const claimDate=parseDate(val('claimDate'));const contractEnd=parseDate(val('contractEnd'));const certStart=parseDate(val('certStart'));const certEnd=parseDate(val('certEnd'));const results=[];const missing=[];if(!eventStart)missing.push('Add the event start date.');if(!claimDate)missing.push('Add the claim / review date.');const allowance=estimateAllowance();results.push(resultCard('Staff group',name?`${name} · ${val('staffGroup')}`:val('staffGroup'),badge('info','Used in form + allowance checks')));results.push(resultCard('Estimated allowance',`£${allowance.amount.toFixed(2)}`,badge('info',allowance.note)));if(eventStart){const threeMonthDeadline=addMonths(eventStart,3);const sixWeekDate=addDays(eventStart,42);const withinThreeMonths=claimDate?claimDate<=threeMonthDeadline:false;results.push(resultCard('3-month deadline',formatDate(threeMonthDeadline),withinThreeMonths?badge('ok','Within limit'):badge('stop','Past deadline')));results.push(resultCard('6-week advisory date',formatDate(sixWeekDate),badge('info','Operational reminder only')));let timingText='Check dates';let timingBadge=badge('warn','Needs review');if(claimDate){if(claimDate<eventStart){timingText='Claim date is before the event start date';timingBadge=badge('warn','Pre-event / possible early reimbursement');}else if(claimDate<=threeMonthDeadline){timingText='Claim date is within 3 months of event start';timingBadge=badge('ok','Normal timing');}else if(yn('extension')){timingText='Over 3 months, but Payroll extension granted';timingBadge=badge('warn','Late claim with extension');}else{timingText='Over 3 months from event start';timingBadge=badge('stop','Extension needed');}}results.push(resultCard('Timing check',timingText,timingBadge));}
+if(contractEnd&&claimDate){const employed=claimDate<=contractEnd;results.push(resultCard('Employment / contract check',employed?'Claim date is before contract end':'Claim date is after contract end',employed?badge('ok','Still in employment at claim date'):badge('stop','Cannot claim after leaving')));if(!employed)missing.push('Claim date is after contract end / leaving date.');}else{results.push(resultCard('Employment / contract check','No contract end date entered',badge('info','Optional but useful')));}if(certStart&&eventStart){const match=certStart.getTime()===eventStart.getTime()&&(!certEnd||!eventEnd||certEnd.getTime()===eventEnd.getTime());results.push(resultCard('Certificate vs leave dates',match?'Certificate dates match leave dates':'Certificate dates do not match leave dates',match?badge('ok','Match'):badge('warn','Verify certificate / form')));if(!match)missing.push('Certificate dates do not match the leave dates.');}else{results.push(resultCard('Certificate vs leave dates','Not fully checked',badge('info','Enter certificate dates if relevant')));}const form=formCheck();results.push(resultCard('Form check',form.text,form.ok?badge('ok','Complete enough for next step'):badge('stop','Form issue')));if(!form.ok)missing.push(form.text+'.');if(!yn('receiptOk'))missing.push('A valid receipt is still needed.');if(!yn('receiptGBP'))missing.push('Receipt must be in GBP.');results.push(resultCard('Receipt check',yn('receiptOk')&&yn('receiptGBP')?'Receipt looks acceptable and in GBP':'Receipt issue found',yn('receiptOk')&&yn('receiptGBP')?badge('ok','Receipt check OK'):badge('stop','Receipt problem')));let earlyText='Not using early reimbursement';let earlyBadge=badge('info','Normal post-attendance route');if(yn('early')){if(eventStart&&claimDate&&claimDate<eventStart){if(yn('dayExpense')){earlyText='Early reimbursement requested, but day-of-event expense cannot be claimed early';earlyBadge=badge('stop','Early reimbursement blocked');missing.push('Day-of-event expense cannot be claimed early.');}else{earlyText='Early reimbursement may be possible before the event';earlyBadge=badge('warn','Needs PGMDE approval first');}}else{earlyText='Early reimbursement selected, but claim date is not before event start';earlyBadge=badge('info','Looks like standard claim instead');}}results.push(resultCard('Early reimbursement check',earlyText,earlyBadge));if(expenseType==='exam'){results.push(resultCard('Claimability','Exam fee selected',badge('stop','Not usually claimable from the cases reviewed')));missing.push('Exam fee selected: this may not be claimable.');}else{results.push(resultCard('Claimability','Course / conference selected',badge('ok','Potentially claimable')));}if(!yn('attendance')&&!(yn('early')&&claimDate&&eventStart&&claimDate<eventStart)){missing.push('Attendance confirmation is still needed.');}let finalText='Needs review';let finalBadge=badge('warn','See missing items');const hardStop=(expenseType==='exam'||(!yn('receiptGBP'))||(contractEnd&&claimDate&&claimDate>contractEnd)||(eventStart&&claimDate&&claimDate>addMonths(eventStart,3)&&!yn('extension'))||!form.ok||(yn('early')&&yn('dayExpense')&&eventStart&&claimDate&&claimDate<eventStart));if(hardStop){finalText='Stop — do not move this forward yet';finalBadge=badge('stop','Fix blockers first');}else if(eventStart&&claimDate&&claimDate<eventStart){finalText=yn('early')?'Eligible for early reimbursement review — wait for PGMDE instructions before EASY':'Pre-event case — choose early reimbursement or wait until attendance';finalBadge=yn('early')?badge('warn','Early route possible'):badge('warn','Not ready yet');}else if(yn('receiptOk')&&yn('receiptGBP')&&form.ok&&yn('attendance')){finalText='Paperwork looks ready — send / review with PGMDE, then EASY once they provide cost centre';finalBadge=badge('ok','Ready for next step');}if(!eventStart||!claimDate){finalText='Add the key dates first';finalBadge=badge('warn','Missing dates');}results.unshift(resultCard('Final status',finalText,finalBadge));if(!missing.length)missing.push('No obvious blockers found from the fields entered.');document.getElementById('results').innerHTML=results.join('');document.getElementById('missingList').innerHTML=missing.map(x=>`<li>${x}</li>`).join('');}
+function resetForm(){document.querySelectorAll('input').forEach(el=>{el.value='';});document.querySelectorAll('select').forEach(el=>{el.selectedIndex=0;});document.getElementById('claimDate').value=todayIso();document.getElementById('results').innerHTML='';document.getElementById('missingList').innerHTML='<li>Run the check first.</li>';}
+function exportCSV(){
+  const cards=[...document.querySelectorAll('#results .result')].map(card=>{
+    const k=card.querySelector('.k')?.innerText||'';
+    const v=card.querySelector('.v')?.innerText||'';
+    const b=card.querySelector('.pill')?.innerText||'';
+    return [k,v,b];
+  });
+  const missing=[...document.querySelectorAll('#missingList li')].map(li=>['Missing / next action',li.innerText,'']);
+  const rows=[['Field','Value','Status/Note'],...cards,['','',''],...missing];
+  const csv=rows
+    .map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(','))
+    .join('\r\n');
 
-  function parseDate(str) {
-    if (!str) return null;
-    str = str.trim();
-    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
-      const d = new Date(str + 'T00:00:00');
-      return isNaN(d) ? null : d;
-    }
-    return null;
-  }
-
-  function formatDate(d) {
-    if (!d) return '—';
-    return d.toLocaleDateString('en-GB', {
-      day: '2-digit', month: 'short', year: 'numeric'
-    });
-  }
-
-  function diffCalc(dateA, dateB) {
-    const diffMs = dateB - dateA;
-    const days   = Math.round(diffMs / 86400000);
-    const weeks  = (days / 7).toFixed(2);
-    const months = (days / 30.44).toFixed(2);
-    return { days, weeks, months, diffMs };
-  }
-
-  function toExcelSerial(d) {
-    if (!d) return '';
-    const epoch = new Date('1899-12-30T00:00:00');
-    return Math.round((d - epoch) / 86400000);
-  }
-
-  function buildResultHTML(diff, labelA, labelB) {
-    const { days, weeks, months, diffMs } = diff;
-    const absDays   = Math.abs(days);
-    const absWeeks  = Math.abs(parseFloat(weeks));
-    const absMonths = Math.abs(parseFloat(months));
-    const direction = diffMs >= 0 ? 'elapsed' : 'remaining';
-
-    return `
-      <div class="result-item">
-        <span class="result-label">📅 Days ${direction}</span>
-        <span class="result-value">${absDays} day${absDays !== 1 ? 's' : ''}</span>
-      </div>
-      <div class="result-item">
-        <span class="result-label">📆 Weeks ${direction}</span>
-        <span class="result-value">${absWeeks.toFixed(2)} wks</span>
-      </div>
-      <div class="result-item">
-        <span class="result-label">🗓️ Months ${direction}</span>
-        <span class="result-value">${absMonths.toFixed(2)} mo</span>
-      </div>
-      <div class="result-item">
-        <span class="result-label">From</span>
-        <span class="result-value">${labelA}</span>
-      </div>
-      <div class="result-item">
-        <span class="result-label">To</span>
-        <span class="result-value">${labelB}</span>
-      </div>`;
-  }
-
-  function statusBadge(dateA, dateB, mode) {
-    const diff = dateB - dateA;
-    if (mode === 'today' || mode === 'specify') {
-      if (diff === 0) return `<div class="status-badge status-same">🔵 Same Day</div>`;
-      if (diff > 0)   return `<div class="status-badge status-past">🟢 Date is in the Past</div>`;
-      return                 `<div class="status-badge status-advance">🔴 Future Date — not yet occurred</div>`;
-    }
-    if (mode === 'claim') {
-      if (diff === 0) return `<div class="status-badge status-same">🔵 Claim filed Same Day as SL</div>`;
-      if (diff > 0)   return `<div class="status-badge status-past">🟢 Claim filed After SL (normal)</div>`;
-      return                 `<div class="status-badge status-advance">🔴 Advanced Claim — filed Before SL!</div>`;
-    }
-    return '';
-  }
-
-  // ── Option Selection ──────────────────────────────────────
-  function showOptions(sec) {
-    const pickerId = sec === 's1' ? 'sl-picker' : 'claim-picker';
-    const dateVal  = document.getElementById(pickerId).value;
-    if (!dateVal) { alert('Please pick a date first.'); return; }
-
-    document.getElementById(sec + '-options').classList.add('show');
-    document.getElementById(sec + '-specify').classList.remove('show');
-    document.getElementById(sec + '-opt1').classList.remove('active');
-    document.getElementById(sec + '-opt2').classList.remove('active');
-    document.getElementById('res' + (sec === 's1' ? '1' : '2')).classList.remove('show');
-  }
-
-  function selectOption(sec, type) {
-    document.getElementById(sec + '-opt1').classList.remove('active');
-    document.getElementById(sec + '-opt2').classList.remove('active');
-
-    if (type === 'current') {
-      document.getElementById(sec + '-opt1').classList.add('active');
-      document.getElementById(sec + '-specify').classList.remove('show');
-      calcWithTarget(sec, today());
-    } else {
-      document.getElementById(sec + '-opt2').classList.add('active');
-      document.getElementById(sec + '-specify').classList.add('show');
-    }
-  }
-
-  function confirmSpecify(sec) {
-    const specId  = sec + '-specify-date';
-    const dateVal = document.getElementById(specId).value;
-    if (!dateVal) { alert('Please pick a target date.'); return; }
-    const target  = parseDate(dateVal);
-    if (!target)  { alert('Invalid target date.'); return; }
-    calcWithTarget(sec, target);
-  }
-
-  function calcWithTarget(sec, targetDate) {
-    const pickerId  = sec === 's1' ? 'sl-picker' : 'claim-picker';
-    const resId     = sec === 's1' ? 'res1' : 'res2';
-    const inputDate = parseDate(document.getElementById(pickerId).value);
-    if (!inputDate) { alert('Please pick a valid date.'); return; }
-
-    const diff = diffCalc(inputDate, targetDate);
-    const box  = document.getElementById(resId);
-
-    // Auto-fill Section 3
-    if (sec === 's1') {
-      document.getElementById('s3-sl-picker').value = inputDate.toISOString().split('T');
-    } else {
-      document.getElementById('s3-claim-picker').value = inputDate.toISOString().split('T');
-    }
-
-    const isToday = targetDate.getTime() === today().getTime();
-    const toLabel = isToday ? 'Today (' + formatDate(targetDate) + ')' : formatDate(targetDate);
-
-    box.innerHTML = buildResultHTML(diff, formatDate(inputDate), toLabel)
-                  + statusBadge(inputDate, targetDate, 'today');
-    box.classList.add('show');
-  }
-
-  // ── Section 3 ─────────────────────────────────────────────
-  function calcSection3() {
-    const slDate    = parseDate(document.getElementById('s3-sl-picker').value);
-    const claimDate = parseDate(document.getElementById('s3-claim-picker').value);
-    if (!slDate)    { alert('Please enter a valid SL date in Section 3.');    return; }
-    if (!claimDate) { alert('Please enter a valid Claim date in Section 3.'); return; }
-
-    const diff = diffCalc(slDate, claimDate);
-    const box  = document.getElementById('res3');
-    box.innerHTML = buildResultHTML(diff, formatDate(slDate), formatDate(claimDate))
-                  + statusBadge(slDate, claimDate, 'claim');
-    box.classList.add('show');
-  }
-
-  // ── Help Modal ────────────────────────────────────────────
-  function toggleHelp() {
-    document.getElementById('helpModal').classList.toggle('show');
-  }
-
-  // ── Export CSV ────────────────────────────────────────────
-  function exportCSV() {
-    const t          = today();
-    const slDate     = parseDate(document.getElementById('sl-picker').value);
-    const claimDate  = parseDate(document.getElementById('claim-picker').value);
-    const s3Sl       = parseDate(document.getElementById('s3-sl-picker').value);
-    const s3Claim    = parseDate(document.getElementById('s3-claim-picker').value);
-
-    const rows = [];
-    rows.push(['SL Date Calculator — Export']);
-    rows.push(['Generated on', formatDate(t)]);
-    rows.push(['Made by', 'mike_tubel']);
-    rows.push(['']);
-
-    rows.push(['SECTION 1 — SL Date']);
-    rows.push(['Field', 'Value']);
-    if (slDate) {
-      const d = diffCalc(slDate, t);
-      rows.push(['SL Date',        formatDate(slDate)]);
-      rows.push(['Compared To',    formatDate(t)]);
-      rows.push(['Days Elapsed',   Math.abs(d.days) + ' days']);
-      rows.push(['Weeks Elapsed',  Math.abs(parseFloat(d.weeks)).toFixed(2) + ' wks']);
-      rows.push(['Months Elapsed', Math.abs(parseFloat(d.months)).toFixed(2) + ' mo']);
-      rows.push(['Status',
-        d.diffMs === 0 ? 'Same Day' :
-        d.diffMs >  0 ? 'Date is in the Past' :
-                        'Future Date (not yet occurred)']);
-    } else {
-      rows.push(['No SL date entered', '']);
-    }
-
-    rows.push(['']);
-    rows.push(['SECTION 2 — Claim Date']);
-    rows.push(['Field', 'Value']);
-    if (claimDate) {
-      const d = diffCalc(claimDate, t);
-      rows.push(['Claim Date',     formatDate(claimDate)]);
-      rows.push(['Compared To',    formatDate(t)]);
-      rows.push(['Days Elapsed',   Math.abs(d.days) + ' days']);
-      rows.push(['Weeks Elapsed',  Math.abs(parseFloat(d.weeks)).toFixed(2) + ' wks']);
-      rows.push(['Months Elapsed', Math.abs(parseFloat(d.months)).toFixed(2) + ' mo']);
-      rows.push(['Status',
-        d.diffMs === 0 ? 'Same Day' :
-        d.diffMs >  0 ? 'Date is in the Past' :
-                        'Future Date (not yet occurred)']);
-    } else {
-      rows.push(['No Claim date entered', '']);
-    }
-
-    rows.push(['']);
-    rows.push(['SECTION 3 — SL Date to Claim Date']);
-    rows.push(['Field', 'Value']);
-    if (s3Sl && s3Claim) {
-      const d = diffCalc(s3Sl, s3Claim);
-      rows.push(['SL Date',    formatDate(s3Sl)]);
-      rows.push(['Claim Date', formatDate(s3Claim)]);
-      rows.push(['Days',       Math.abs(d.days) + ' days']);
-      rows.push(['Weeks',      Math.abs(parseFloat(d.weeks)).toFixed(2) + ' wks']);
-      rows.push(['Months',     Math.abs(parseFloat(d.months)).toFixed(2) + ' mo']);
-      rows.push(['Status',
-        d.diffMs === 0 ? 'Claim filed Same Day as SL' :
-        d.diffMs >  0 ? 'Claim filed After SL (normal)' :
-                        'Advanced Claim — filed Before SL!']);
-    } else {
-      rows.push(['No dates entered for Section 3', '']);
-    }
-
-    const BOM = '\uFEFF';
-    const csv = rows.map(r =>
-      r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')
-    ).join('\n');
-
-    const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = `SL_Results_${t.toISOString().split('T')}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    alert('✅ Export successful! Open the .csv file in Excel.');
-  }
-  function downloadTemplate() {
-    const t = today();
-
-    const wb = XLSX.utils.book_new();
-
-    // ── Row data: [Field, Value, Notes]
-    const rows = [
-      // Title
-      ["SL Date Calculator — Excel Template", "", ""],
-      ["Generated: " + formatDate(t) + "   |   Made by mike_tubel   |   Replace yellow cells with your actual dates", "", ""],
-      ["", "", ""],
-
-      // Headers
-      ["Field", "Date / Value", "Notes"],
-
-      // SECTION 1
-      ["SECTION 1 — Study Leave (SL) Date to Today", "", ""],
-      ["SL Date (replace sample)",  new Date(2025, 0, 15),  "⬅ REPLACE with your SL date"],
-      ["Today's Date",              {f: "TODAY()"},          "Auto-updates every time you open"],
-      ["Days Elapsed",              {f: "B7-B6"},            "= Today minus SL Date"],
-      ["Weeks Elapsed",             {f: "(B7-B6)/7"},        "= Days divided by 7"],
-      ["Months Elapsed",            {f: "(B7-B6)/30.44"},    "= Days divided by 30.44"],
-      ["Status",                    {f: 'IF(B6=B7,"Same as Today",IF(B6<B7,"Date is in the Past","Future Date not yet occurred"))'}, "Auto status"],
-      ["", "", ""],
-
-      // SECTION 2
-      ["SECTION 2 — Claim Date to Today", "", ""],
-      ["Claim Date (replace sample)", new Date(2025, 2, 1),  "⬅ REPLACE with your Claim date"],
-      ["Today's Date",                {f: "TODAY()"},         "Auto-updates every time you open"],
-      ["Days Elapsed",                {f: "B14-B13"},         "= Today minus Claim Date"],
-      ["Weeks Elapsed",               {f: "(B14-B13)/7"},     "= Days divided by 7"],
-      ["Months Elapsed",              {f: "(B14-B13)/30.44"}, "= Days divided by 30.44"],
-      ["Status",                      {f: 'IF(B13=B14,"Same as Today",IF(B13<B14,"Date is in the Past","Future Date not yet occurred"))'}, "Auto status"],
-      ["", "", ""],
-
-      // SECTION 3
-      ["SECTION 3 — SL Date to Claim Date", "", ""],
-      ["SL Date (replace sample)",    new Date(2025, 0, 15), "⬅ REPLACE with your SL date"],
-      ["Claim Date (replace sample)", new Date(2025, 2, 1),  "⬅ REPLACE with your Claim date"],
-      ["Days (SL to Claim)",          {f: "B22-B21"},        "= Claim Date minus SL Date"],
-      ["Weeks (SL to Claim)",         {f: "(B22-B21)/7"},    "= Days divided by 7"],
-      ["Months (SL to Claim)",        {f: "(B22-B21)/30.44"},"= Days divided by 30.44"],
-      ["Status",                      {f: 'IF(B21=B22,"Claim filed Same Day as SL",IF(B21<B22,"Claim filed After SL (normal)","Advanced Claim — filed Before SL!"))'}, "Auto status"],
-      ["", "", ""],
-      ["Made by mike_tubel · SL Date Calculator v1.0 · Yellow = replace dates · Green = auto-calculated", "", ""]
-    ];
-
-    // ── Build worksheet
-    const ws = XLSX.utils.aoa_to_sheet(rows);
-
-    // ── Column widths
-    ws['!cols'] = [
-      { wch: 35 },
-      { wch: 22 },
-      { wch: 40 }
-    ];
-
-    // ── Format date cells as dates
-    const dateCells = ['B6', 'B7', 'B13', 'B14', 'B21', 'B22'];
-    dateCells.forEach(ref => {
-      if (ws[ref]) {
-        ws[ref].z = 'DD-MMM-YYYY';
-      }
-    });
-
-    // ── Format decimal formula cells
-    const decCells = ['B9', 'B10', 'B17', 'B18', 'B24', 'B25'];
-    decCells.forEach(ref => {
-      if (ws[ref]) ws[ref].z = '0.00';
-    });
-
-    // ── Format integer formula cells
-    const intCells = ['B8', 'B16', 'B23'];
-    intCells.forEach(ref => {
-      if (ws[ref]) ws[ref].z = '0';
-    });
-
-    // ── Apply styles using cell comments for yellow input indicator
-    // SheetJS community does not support full cell styling
-    // but we set number formats and add a note row at top
-
-    // ── Merge title cells A1:C1
-    ws['!merges'] = [
-      { s: { r: 0, c: 0 }, e: { r: 0, c: 2 } },
-      { s: { r: 1, c: 0 }, e: { r: 1, c: 2 } },
-      { s: { r: 4, c: 0 }, e: { r: 4, c: 2 } },
-      { s: { r: 12, c: 0 }, e: { r: 12, c: 2 } },
-      { s: { r: 20, c: 0 }, e: { r: 20, c: 2 } },
-      { s: { r: 28, c: 0 }, e: { r: 28, c: 2 } }
-    ];
-
-    XLSX.utils.book_append_sheet(wb, ws, "SL Calculator");
-
-    // ── Download
-    XLSX.writeFile(wb, `SL_Calculator_Template_${t.toISOString().split('T')}.xlsx`);
-    alert('✅ Template downloaded! Open in Excel — replace B6, B13, B21 and B22 with your actual dates.');
-  }
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='study_leave_checker_results.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+runCheck();
 </script>
 </body>
 </html>
