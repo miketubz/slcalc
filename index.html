@@ -39,6 +39,11 @@
   .small { font-size:.82rem; color:#475569; }
   .muted { color:#64748b; }
   .footer { text-align:center; color:#64748b; font-size:.77rem; margin-top:14px; }
+  .priority-strip { background:#fff; border:2px solid #dbe7ff; border-radius:16px; padding:16px 18px; margin-bottom:16px; box-shadow:0 6px 20px rgba(20,30,55,.06); }
+  .priority-title { font-size:.78rem; text-transform:uppercase; letter-spacing:.06em; color:#1d4ed8; font-weight:800; margin-bottom:6px; }
+  .priority-value { font-size:1.6rem; font-weight:900; color:#0f172a; }
+  .priority-sub { margin-top:6px; font-size:.9rem; color:#475569; }
+
   @media (max-width:640px) { .row2 { grid-template-columns:1fr; } }
 </style>
 </head>
@@ -46,7 +51,19 @@
 <div class="wrap">
   <div class="hero">
     <h1>Study Leave Checker</h1>
-    <p>Simple single-file checker for form completeness, deadline, early reimbursement, and next-step guidance.</p>
+    <p>Simple single-file checker prioritising days left to action, the actual 3-month limit, form completeness, and next-step guidance.</p>
+  </div>
+
+  <div class="priority-strip">
+    <div class="priority-title">90-day action countdown</div>
+    <div class="priority-value" id="priorityDays">Enter event start and review date</div>
+    <div class="priority-sub" id="priorityNote">This is an action countdown only. The actual 3-month limit is checked separately.</div>
+  </div>
+
+  <div class="priority-strip" style="border-color:#e9e5ff;">
+    <div class="priority-title" style="color:#5b21b6;">Actual 3-month limit</div>
+    <div class="priority-value" id="threeMonthValue">Enter event start and review date</div>
+    <div class="priority-sub" id="threeMonthNote">This uses the real 3 calendar months from the event start date.</div>
   </div>
 
   <div class="grid">
@@ -69,17 +86,14 @@
       <h2>2. Dates</h2>
       <div class="row2">
         <div><label>Event start date</label><input id="eventStart" type="date" /></div>
-        <div><label>Event end date</label><input id="eventEnd" type="date" /></div>
+        <div><label>Certificate date</label><input id="certDate" type="date" /></div>
       </div>
       <div class="row2">
         <div><label>Claim / review date</label><input id="claimDate" type="date" /></div>
         <div><label>Contract end date</label><input id="contractEnd" type="date" /></div>
       </div>
-      <div class="row2">
-        <div><label>Certificate start date</label><input id="certStart" type="date" /></div>
-        <div><label>Certificate end date</label><input id="certEnd" type="date" /></div>
-      </div>
-      <div class="hint">The 3-month rule is calculated from the <strong>event start date</strong>.</div>
+
+      <div class="hint">The action countdown uses <strong>90 days from the event start date</strong>. The actual <strong>3-month limit</strong> is checked separately using calendar months. The 6-week flag remains 42 days from the event date.</div>
     </div>
   </div>
 
@@ -87,27 +101,27 @@
     <div class="card">
       <h2>3. Form checks</h2>
       <div class="row2">
-        <div><label>Current form version used?</label><select id="currentForm"><option>Yes</option><option>No</option></select></div>
-        <div><label>Form signed?</label><select id="formSigned"><option>Yes</option><option>No</option></select></div>
+        <div><label>Current form version used?</label><select id="currentForm"><option>No</option><option>Yes</option></select></div>
+        <div><label>Form signed?</label><select id="formSigned"><option>No</option><option>Yes</option></select></div>
       </div>
       <div class="row2">
-        <div><label>ES/CS signed?</label><select id="escsSigned"><option>Yes</option><option>No</option></select></div>
+        <div><label>ES/CS signed?</label><select id="escsSigned"><option>No</option><option>Yes</option></select></div>
         <div><label>Rota / manager signed?</label><select id="rotaSigned"><option>No</option><option>Yes</option></select></div>
       </div>
       <div class="row2">
-        <div><label>Checklist complete?</label><select id="checklist"><option>Yes</option><option>No</option></select></div>
-        <div><label>Valid e-signature?</label><select id="validESign"><option>Yes</option><option>No</option></select></div>
+        <div><label>Checklist complete?</label><select id="checklist"><option>No</option><option>Yes</option></select></div>
+        <div><label>Valid e-signature?</label><select id="validESign"><option>No</option><option>Yes</option></select></div>
       </div>
     </div>
 
     <div class="card">
       <h2>4. Evidence checks</h2>
       <div class="row2">
-        <div><label>Receipt acceptable?</label><select id="receiptOk"><option>Yes</option><option>No</option></select></div>
-        <div><label>Receipt in GBP?</label><select id="receiptGBP"><option>Yes</option><option>No</option></select></div>
+        <div><label>Receipt acceptable?</label><select id="receiptOk"><option>No</option><option>Yes</option></select></div>
+        <div><label>Receipt in GBP?</label><select id="receiptGBP"><option>No</option><option>Yes</option></select></div>
       </div>
       <div class="row2">
-        <div><label>Attendance confirmed?</label><select id="attendance"><option>Yes</option><option>No</option></select></div>
+        <div><label>Attendance confirmed?</label><select id="attendance"><option>No</option><option>Yes</option></select></div>
         <div><label>Early reimbursement requested?</label><select id="early"><option>No</option><option>Yes</option></select></div>
       </div>
       <div class="row2">
@@ -126,17 +140,200 @@
 function todayIso(){const d=new Date();d.setHours(0,0,0,0);return d.toISOString().slice(0,10);}document.getElementById('claimDate').value=todayIso();
 function parseDate(v){if(!v)return null;const d=new Date(v+'T00:00:00');return isNaN(d)?null:d;}
 function formatDate(d){if(!d)return '—';return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});}
-function addMonths(date,months){const d=new Date(date);d.setMonth(d.getMonth()+months);return d;}
 function addDays(date,days){const d=new Date(date);d.setDate(d.getDate()+days);return d;}
+function addMonthsExcel(date,months){
+  const y=date.getFullYear();
+  const m=date.getMonth();
+  const d=date.getDate();
+  const targetMonthIndex=m+months;
+  const targetYear=y+Math.floor(targetMonthIndex/12);
+  const targetMonth=((targetMonthIndex%12)+12)%12;
+  const lastDay=new Date(targetYear,targetMonth+1,0).getDate();
+  return new Date(targetYear,targetMonth,Math.min(d,lastDay));
+}
 function yn(id){return document.getElementById(id).value==='Yes';}
 function val(id){return document.getElementById(id).value;}
 function estimateAllowance(){const staff=val('staffGroup');const pas=parseFloat(val('pas'));if(staff==='Consultant')return{amount:600,note:'Standard guide amount'};if(staff==='LED')return{amount:400,note:'Standard guide amount; contract/team may adjust'};if(staff==='SAS'){if(!isNaN(pas)&&pas>0){const est=Math.min(600,Math.round(pas*100));return{amount:est,note:'Simple PA-based estimate from your SAS cases'};}return{amount:600,note:'Default SAS guide amount when PAs not entered'};}return{amount:0,note:''};}
 function formCheck(){const staff=val('staffGroup');const currentForm=yn('currentForm');const formSigned=yn('formSigned');const escs=yn('escsSigned');const rota=yn('rotaSigned');const checklist=yn('checklist');const eSign=yn('validESign');if(!currentForm)return{ok:false,text:'Wrong / old form version'};if(staff==='Consultant'){if(!formSigned)return{ok:false,text:'Consultant form not signed'};return{ok:true,text:'Consultant form check looks OK'};}if(staff==='SAS'){if(!escs)return{ok:false,text:'Missing ES/CS signature'};if(!checklist)return{ok:false,text:'Checklist incomplete'};if(!eSign)return{ok:false,text:'Invalid / typed signature'};return{ok:true,text:'SAS form check looks OK'};}if(staff==='LED'){if(!escs)return{ok:false,text:'Missing ES/CS signature'};if(!rota)return{ok:false,text:'Missing rota / manager signature'};if(!checklist)return{ok:false,text:'Checklist incomplete'};if(!eSign)return{ok:false,text:'Invalid / typed signature'};return{ok:true,text:'LED form check looks OK'};}return{ok:false,text:'Check staff group'};}
 function badge(type,text){return `<span class="pill ${type}">${text}</span>`;}
 function resultCard(label,value,badgeHtml=''){return `<div class="result"><div class="k">${label}</div><div class="v">${value}</div>${badgeHtml}</div>`;}
-function runCheck(){const name=val('name').trim();const expenseType=val('expenseType');const eventStart=parseDate(val('eventStart'));const eventEnd=parseDate(val('eventEnd'));const claimDate=parseDate(val('claimDate'));const contractEnd=parseDate(val('contractEnd'));const certStart=parseDate(val('certStart'));const certEnd=parseDate(val('certEnd'));const results=[];const missing=[];if(!eventStart)missing.push('Add the event start date.');if(!claimDate)missing.push('Add the claim / review date.');const allowance=estimateAllowance();results.push(resultCard('Staff group',name?`${name} · ${val('staffGroup')}`:val('staffGroup'),badge('info','Used in form + allowance checks')));results.push(resultCard('Estimated allowance',`£${allowance.amount.toFixed(2)}`,badge('info',allowance.note)));if(eventStart){const threeMonthDeadline=addMonths(eventStart,3);const sixWeekDate=addDays(eventStart,42);const withinThreeMonths=claimDate?claimDate<=threeMonthDeadline:false;results.push(resultCard('3-month deadline',formatDate(threeMonthDeadline),withinThreeMonths?badge('ok','Within limit'):badge('stop','Past deadline')));results.push(resultCard('6-week advisory date',formatDate(sixWeekDate),badge('info','Operational reminder only')));let timingText='Check dates';let timingBadge=badge('warn','Needs review');if(claimDate){if(claimDate<eventStart){timingText='Claim date is before the event start date';timingBadge=badge('warn','Pre-event / possible early reimbursement');}else if(claimDate<=threeMonthDeadline){timingText='Claim date is within 3 months of event start';timingBadge=badge('ok','Normal timing');}else if(yn('extension')){timingText='Over 3 months, but Payroll extension granted';timingBadge=badge('warn','Late claim with extension');}else{timingText='Over 3 months from event start';timingBadge=badge('stop','Extension needed');}}results.push(resultCard('Timing check',timingText,timingBadge));}
-if(contractEnd&&claimDate){const employed=claimDate<=contractEnd;results.push(resultCard('Employment / contract check',employed?'Claim date is before contract end':'Claim date is after contract end',employed?badge('ok','Still in employment at claim date'):badge('stop','Cannot claim after leaving')));if(!employed)missing.push('Claim date is after contract end / leaving date.');}else{results.push(resultCard('Employment / contract check','No contract end date entered',badge('info','Optional but useful')));}if(certStart&&eventStart){const match=certStart.getTime()===eventStart.getTime()&&(!certEnd||!eventEnd||certEnd.getTime()===eventEnd.getTime());results.push(resultCard('Certificate vs leave dates',match?'Certificate dates match leave dates':'Certificate dates do not match leave dates',match?badge('ok','Match'):badge('warn','Verify certificate / form')));if(!match)missing.push('Certificate dates do not match the leave dates.');}else{results.push(resultCard('Certificate vs leave dates','Not fully checked',badge('info','Enter certificate dates if relevant')));}const form=formCheck();results.push(resultCard('Form check',form.text,form.ok?badge('ok','Complete enough for next step'):badge('stop','Form issue')));if(!form.ok)missing.push(form.text+'.');if(!yn('receiptOk'))missing.push('A valid receipt is still needed.');if(!yn('receiptGBP'))missing.push('Receipt must be in GBP.');results.push(resultCard('Receipt check',yn('receiptOk')&&yn('receiptGBP')?'Receipt looks acceptable and in GBP':'Receipt issue found',yn('receiptOk')&&yn('receiptGBP')?badge('ok','Receipt check OK'):badge('stop','Receipt problem')));let earlyText='Not using early reimbursement';let earlyBadge=badge('info','Normal post-attendance route');if(yn('early')){if(eventStart&&claimDate&&claimDate<eventStart){if(yn('dayExpense')){earlyText='Early reimbursement requested, but day-of-event expense cannot be claimed early';earlyBadge=badge('stop','Early reimbursement blocked');missing.push('Day-of-event expense cannot be claimed early.');}else{earlyText='Early reimbursement may be possible before the event';earlyBadge=badge('warn','Needs PGMDE approval first');}}else{earlyText='Early reimbursement selected, but claim date is not before event start';earlyBadge=badge('info','Looks like standard claim instead');}}results.push(resultCard('Early reimbursement check',earlyText,earlyBadge));if(expenseType==='exam'){results.push(resultCard('Claimability','Exam fee selected',badge('stop','Not usually claimable from the cases reviewed')));missing.push('Exam fee selected: this may not be claimable.');}else{results.push(resultCard('Claimability','Course / conference selected',badge('ok','Potentially claimable')));}if(!yn('attendance')&&!(yn('early')&&claimDate&&eventStart&&claimDate<eventStart)){missing.push('Attendance confirmation is still needed.');}let finalText='Needs review';let finalBadge=badge('warn','See missing items');const hardStop=(expenseType==='exam'||(!yn('receiptGBP'))||(contractEnd&&claimDate&&claimDate>contractEnd)||(eventStart&&claimDate&&claimDate>addMonths(eventStart,3)&&!yn('extension'))||!form.ok||(yn('early')&&yn('dayExpense')&&eventStart&&claimDate&&claimDate<eventStart));if(hardStop){finalText='Stop — do not move this forward yet';finalBadge=badge('stop','Fix blockers first');}else if(eventStart&&claimDate&&claimDate<eventStart){finalText=yn('early')?'Eligible for early reimbursement review — wait for PGMDE instructions before EASY':'Pre-event case — choose early reimbursement or wait until attendance';finalBadge=yn('early')?badge('warn','Early route possible'):badge('warn','Not ready yet');}else if(yn('receiptOk')&&yn('receiptGBP')&&form.ok&&yn('attendance')){finalText='Paperwork looks ready — send / review with PGMDE, then EASY once they provide cost centre';finalBadge=badge('ok','Ready for next step');}if(!eventStart||!claimDate){finalText='Add the key dates first';finalBadge=badge('warn','Missing dates');}results.unshift(resultCard('Final status',finalText,finalBadge));if(!missing.length)missing.push('No obvious blockers found from the fields entered.');document.getElementById('results').innerHTML=results.join('');document.getElementById('missingList').innerHTML=missing.map(x=>`<li>${x}</li>`).join('');}
-function resetForm(){document.querySelectorAll('input').forEach(el=>{el.value='';});document.querySelectorAll('select').forEach(el=>{el.selectedIndex=0;});document.getElementById('claimDate').value=todayIso();document.getElementById('results').innerHTML='';document.getElementById('missingList').innerHTML='<li>Run the check first.</li>';}
+function setPriority(daysText,noteText,cls){
+  const el=document.getElementById('priorityDays');
+  const note=document.getElementById('priorityNote');
+  el.textContent=daysText;
+  note.textContent=noteText;
+  el.style.color = cls==='stop' ? '#991b1b' : cls==='warn' ? '#92400e' : cls==='ok' ? '#166534' : '#0f172a';
+}
+function setThreeMonth(valueText,noteText,cls){
+  const el=document.getElementById('threeMonthValue');
+  const note=document.getElementById('threeMonthNote');
+  el.textContent=valueText;
+  note.textContent=noteText;
+  el.style.color = cls==='stop' ? '#991b1b' : cls==='warn' ? '#92400e' : cls==='ok' ? '#166534' : '#0f172a';
+}
+function runCheck(){
+  const name=val('name').trim();
+  const expenseType=val('expenseType');
+  const eventStart=parseDate(val('eventStart'));
+    const claimDate=parseDate(val('claimDate'));
+  const contractEnd=parseDate(val('contractEnd'));
+  const certDate=parseDate(val('certDate'));
+  const results=[];
+  const missing=[];
+
+  if(!eventStart) missing.push('Add the event start date first.');
+  if(!claimDate) missing.push('Add the claim / review date.');
+
+  const allowance=estimateAllowance();
+  let actionDate=null, threeMonthDeadline=null, sixWeekDate=null, daysLeft=null, withinThreeMonths=false;
+
+  if(eventStart){
+    actionDate=addDays(eventStart,90);
+    threeMonthDeadline=addMonthsExcel(eventStart,3);
+    sixWeekDate=addDays(eventStart,42);
+  }
+  if(eventStart && claimDate){
+    const msPerDay=86400000;
+    daysLeft=Math.ceil((actionDate - claimDate)/msPerDay);
+    withinThreeMonths=claimDate<=threeMonthDeadline;
+    if(daysLeft < 0){
+      setPriority(`${Math.abs(daysLeft)} day(s) past the 90-day action date`,`The 90-day date is only an action countdown.`,`warn`);
+    }else if(daysLeft===0){
+      setPriority('Last day before the 90-day action date',`This is the 90-day action countdown from the event start date.`,`warn`);
+    }else{
+      setPriority(`${daysLeft} day(s) left to action`,`This is a 90-day countdown only.`, daysLeft<=14 ? 'warn' : 'ok');
+    }
+
+    if(withinThreeMonths){
+      setThreeMonth(`Within limit until ${formatDate(threeMonthDeadline)}`,`This uses the actual 3 calendar months from the event start date.`, 'ok');
+    }else{
+      setThreeMonth(`Over the limit since ${formatDate(threeMonthDeadline)}`,`This uses the actual 3 calendar months from the event start date.`, 'stop');
+    }
+  } else {
+    setPriority('Enter event start and review date','This is an action countdown only. The actual 3-month limit is checked separately.','info');
+    setThreeMonth('Enter event start and review date','This uses the real 3 calendar months from the event start date.','info');
+  }
+
+  // Put the time-critical cards first
+  if(eventStart && claimDate){
+    const leftLabel = daysLeft < 0 ? `${Math.abs(daysLeft)} day(s) past` : `${daysLeft} day(s) left`;
+    const leftBadge = daysLeft < 0 ? badge('warn','Past 90-day action date') : (daysLeft<=14 ? badge('warn','Urgent') : badge('ok','Action countdown'));
+    results.push(resultCard('Days left to action (90 days)', leftLabel, leftBadge));
+    results.push(resultCard('90-day action date', formatDate(actionDate), badge('info','Separate countdown only')));
+    results.push(resultCard('3-month limit date', formatDate(threeMonthDeadline), withinThreeMonths ? badge('ok','Within actual 3 months') : badge('stop','Past actual 3 months')));
+    results.push(resultCard('6-week advisory date', formatDate(sixWeekDate), badge('info','Operational reminder only')));
+  } else {
+    results.push(resultCard('Days left to action (90 days)','Cannot calculate yet',badge('warn','Enter event start + review date')));
+  }
+
+  results.push(resultCard('Staff group', name ? `${name} · ${val('staffGroup')}` : val('staffGroup'), badge('info','Used in form + allowance checks')));
+  results.push(resultCard('Estimated allowance', `£${allowance.amount.toFixed(2)}`, badge('info', allowance.note)));
+
+  let timingText='Check dates';
+  let timingBadge=badge('warn','Needs review');
+  if(eventStart && claimDate){
+    if(claimDate < eventStart){
+      timingText='Claim date is before the event start date';
+      timingBadge=badge('warn','Pre-event / possible early reimbursement');
+    } else if(claimDate <= threeMonthDeadline){
+      timingText='Claim date is within the actual 3 months from event start';
+      timingBadge=badge('ok','Within actual 3 months');
+    } else if(yn('extension')){
+      timingText='Over the actual 3-month limit, but Payroll extension granted';
+      timingBadge=badge('warn','Late claim with extension');
+    } else {
+      timingText='Over the actual 3-month limit from event start';
+      timingBadge=badge('stop','Extension needed');
+    }
+  }
+  results.push(resultCard('Timing check', timingText, timingBadge));
+
+  if(contractEnd && claimDate){
+    const employed=claimDate<=contractEnd;
+    results.push(resultCard('Employment / contract check', employed?'Claim date is before contract end':'Claim date is after contract end', employed?badge('ok','Still in employment at claim date'):badge('stop','Cannot claim after leaving')));
+    if(!employed) missing.push('Claim date is after contract end / leaving date.');
+  } else {
+    results.push(resultCard('Employment / contract check','No contract end date entered',badge('info','Optional but useful')));
+  }
+
+  if(certDate && eventStart){
+    const match=certDate.getTime()===eventStart.getTime();
+    results.push(resultCard('Certificate date check', match?'Certificate date matches event start date':'Certificate date does not match event start date', match?badge('ok','Match'):badge('warn','Verify certificate / form')));
+    if(!match) missing.push('Certificate date does not match the event start date.');
+  } else {
+    results.push(resultCard('Certificate date check','Not fully checked',badge('info','Enter certificate date if relevant')));
+  }
+
+  const form=formCheck();
+  results.push(resultCard('Form check', form.text, form.ok?badge('ok','Complete enough for next step'):badge('stop','Form issue')));
+  if(!form.ok) missing.push(form.text+'.');
+
+  if(!yn('receiptOk')) missing.push('A valid receipt is still needed.');
+  if(!yn('receiptGBP')) missing.push('Receipt must be in GBP.');
+  results.push(resultCard('Receipt check', yn('receiptOk')&&yn('receiptGBP')?'Receipt looks acceptable and in GBP':'Receipt issue found', yn('receiptOk')&&yn('receiptGBP')?badge('ok','Receipt check OK'):badge('stop','Receipt problem')));
+
+  let earlyText='Not using early reimbursement';
+  let earlyBadge=badge('info','Normal post-attendance route');
+  if(yn('early')){
+    if(eventStart && claimDate && claimDate < eventStart){
+      if(yn('dayExpense')){
+        earlyText='Early reimbursement requested, but day-of-event expense cannot be claimed early';
+        earlyBadge=badge('stop','Early reimbursement blocked');
+        missing.push('Day-of-event expense cannot be claimed early.');
+      } else {
+        earlyText='Early reimbursement may be possible before the event';
+        earlyBadge=badge('warn','Needs PGMDE approval first');
+      }
+    } else {
+      earlyText='Early reimbursement selected, but claim date is not before event start';
+      earlyBadge=badge('info','Looks like standard claim instead');
+    }
+  }
+  results.push(resultCard('Early reimbursement check', earlyText, earlyBadge));
+
+  if(expenseType==='exam'){
+    results.push(resultCard('Claimability','Exam fee selected',badge('stop','Not usually claimable from the cases reviewed')));
+    missing.push('Exam fee selected: this may not be claimable.');
+  } else {
+    results.push(resultCard('Claimability','Course / conference selected',badge('ok','Potentially claimable')));
+  }
+
+  if(!yn('attendance') && !(yn('early') && claimDate && eventStart && claimDate < eventStart)){
+    missing.push('Attendance confirmation is still needed.');
+  }
+
+  let finalText='Needs review';
+  let finalBadge=badge('warn','See missing items');
+  const hardStop=(expenseType==='exam' || (!yn('receiptGBP')) || (contractEnd&&claimDate&&claimDate>contractEnd) || (eventStart&&claimDate&&claimDate>threeMonthDeadline&&!yn('extension')) || !form.ok || (yn('early')&&yn('dayExpense')&&eventStart&&claimDate&&claimDate<eventStart));
+  if(hardStop){
+    finalText='Stop — do not move this forward yet';
+    finalBadge=badge('stop','Fix blockers first');
+  } else if(eventStart && claimDate && claimDate < eventStart){
+    finalText=yn('early')?'Eligible for early reimbursement review — wait for PGMDE instructions before EASY':'Pre-event case — choose early reimbursement or wait until attendance';
+    finalBadge=yn('early')?badge('warn','Early route possible'):badge('warn','Not ready yet');
+  } else if(yn('receiptOk')&&yn('receiptGBP')&&form.ok&&yn('attendance')){
+    finalText='Paperwork looks ready — send / review with PGMDE, then EASY once they provide cost centre';
+    finalBadge=badge('ok','Ready for next step');
+  }
+  if(!eventStart||!claimDate){
+    finalText='Add the key dates first';
+    finalBadge=badge('warn','Missing dates');
+  }
+  results.unshift(resultCard('Final status', finalText, finalBadge));
+
+  if(!missing.length) missing.push('No obvious blockers found from the fields entered.');
+  // Prioritise missing list with timing items first
+  if(eventStart && claimDate){
+    if(claimDate > threeMonthDeadline && !yn('extension')) {
+      missing.unshift('This case is past the actual 3-month limit from the event start date. Payroll extension is needed first.');
+    } else if(daysLeft <= 14) {
+      missing.unshift(`Urgent: only ${daysLeft} day(s) left before the 90-day action date.`);
+    }
+  }
+  document.getElementById('results').innerHTML=results.join('');
+  document.getElementById('missingList').innerHTML=missing.map(x=>`<li>${x}</li>`).join('');
+}
+function resetForm(){document.querySelectorAll('input').forEach(el=>{el.value='';});document.querySelectorAll('select').forEach(el=>{el.selectedIndex=0;});document.getElementById('claimDate').value=todayIso();document.getElementById('results').innerHTML='';document.getElementById('missingList').innerHTML='<li>Run the check first.</li>'; setPriority('Enter event start and review date','This is an action countdown only. The actual 3-month limit is checked separately.','info'); setThreeMonth('Enter event start and review date','This uses the real 3 calendar months from the event start date.','info');}
 function exportCSV(){
   const cards=[...document.querySelectorAll('#results .result')].map(card=>{
     const k=card.querySelector('.k')?.innerText||'';
